@@ -21,6 +21,13 @@ The **GAME** tab (key 5) is "Stand Breach", a breach-protocol style hacking puzz
 fill the buffer so it contains the three daemon sequences before the timer runs out.
 Best score is kept in the browser's local storage.
 
+## Easter egg: the Blackwall
+Upload all 3 daemons in the GAME tab and a netrunner transmission arrives (replay it via the `▌MSG`
+button). It hints at a crack in the site. Finding it leads to the encounter in `blackwall.js`
+(styles at the bottom of `style.css`). Progress is kept per browser session.
+Testing in the browser console: `JJ_EGG.arm()`, `JJ_EGG.breach()`, `JJ_EGG.reset()`.
+Rewrite the dialogue in the `MSG` array and in `breach()`.
+
 ## Host for free on GitHub Pages
 1. Create a **public** repo named exactly `Joshua1138.github.io`.
 2. Push these files to its `main` branch:

@@ -503,6 +503,7 @@
     bg.newBest = bg.score > bgStore.get();
     if (bg.newBest) bgStore.set(bg.score);
     sfx(up === 3 ? "boot" : "tab");
+    if (up === 3 && window.JJ_EGG) setTimeout(() => window.JJ_EGG.onWin(), 2600);
   }
   function bgChoose(r, c) {
     if (!bgValid(r, c)) return;
@@ -586,6 +587,7 @@
   /* ================= KEYBOARD ================= */
   addEventListener("keydown", (e) => {
     if (!$("boot").classList.contains("gone")) { if (e.key === "Escape" || e.key === "Enter") finishBoot(); return; }
+    if (window.JJ_LOCK) return;
     if (e.target.matches("input, textarea") || e.metaKey || e.ctrlKey || e.altKey) return;
     const k = e.key.toLowerCase();
     if (k === "q") step(-1);
@@ -629,6 +631,9 @@
     current = null; setView(location.hash.slice(1) || "profile", false);
     setTimeout(() => toast("CONNECTION ESTABLISHED", `Welcome to ${S.name}'s system.`), 600);
   }
+  window.JJ = {
+    get ctx() { return ctx; }, get sfxOn() { return sfxOn; }, initAudio, pause, toast, scramble, setView, seen, $, esc,
+  };
   $("jackIn").onclick = finishBoot;
   $("skipBoot").onclick = finishBoot;
   setView(location.hash.slice(1) || "profile", false);

@@ -33,7 +33,7 @@
         <div class="ro"><small>LOCAL TIME</small><span id="clock">--:--:--</span></div>
         <div class="ro hide-s"><small>LOC</small><span>51.56N 05.09E</span></div>
         <div class="ro hide-s"><small>SYNC</small><span class="meter"><i id="syncMeter"></i></span></div>
-        <div class="ro hide-s"><small>SIGNAL</small><span class="signal"><i></i><i></i><i></i><i></i><i></i></span></div>
+        <div class="ro hide-s" id="roSignal"><small>SIGNAL</small><span class="signal" id="signal"><i></i><i></i><i></i><i></i><i></i></span></div>
       </div>
       <div class="top-actions">
         <button id="sfxBtn" class="mini" title="Interface sounds (M)">SFX:ON</button>
@@ -193,5 +193,6 @@
 
   <script src="content.js"></script>
   <script src="app.js"></script>
+  <script src="blackwall.js"></script>
 </body>
 </html>
