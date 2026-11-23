@@ -37,7 +37,6 @@
       </div>
       <div class="top-actions">
         <button id="sfxBtn" class="mini" title="Interface sounds (M)">SFX:ON</button>
-        <button id="zaWarudo" class="za-btn" title="Stop time (Z)">⏱ ZA WARUDO</button>
       </div>
     </header>
 
@@ -47,6 +46,7 @@
       <button data-view="stand" class="tab">STAND</button>
       <button data-view="archive" class="tab">ARCHIVE</button>
       <button data-view="audio" class="tab">AUDIO</button>
+      <button data-view="game" class="tab">GAME</button>
       <button data-view="comms" class="tab">COMMS</button>
       <span class="key">E</span>
     </nav>
@@ -64,6 +64,7 @@
             <div class="cta">
               <button class="hbtn" data-goto="archive"><span>OPEN ARCHIVE</span><em>2</em></button>
               <button class="hbtn alt" data-goto="audio"><span>▶ AUDIO</span><em>4</em></button>
+              <button class="hbtn" data-goto="game"><span>PLAY GAME</span><em>5</em></button>
             </div>
           </div>
           <div class="panel idcard">
@@ -122,7 +123,7 @@
       <section class="view" data-view="audio" aria-label="Music player">
         <h2 class="vtitle"><span class="scr">SOUND STAND</span><small>音楽</small></h2>
         <div class="player">
-          <div class="panel deck">
+          <div class="panel deck" id="deck">
             <div class="panel-head"><span>NOW PLAYING</span><span class="code" id="bpm">-- BPM</span></div>
             <div class="np">
               <div class="disc" id="disc"><i></i></div>
@@ -132,6 +133,7 @@
               </div>
             </div>
             <canvas id="viz" width="720" height="150" aria-hidden="true"></canvas>
+            <div class="ytwrap" id="ytWrap"><div id="ytPlayer"></div></div>
             <div class="progress"><div id="progBar"></div></div>
             <div class="controls">
               <button id="prevBtn" class="cbtn" aria-label="Previous">⏮</button>
@@ -148,6 +150,26 @@
         </div>
       </section>
 
+      <!-- GAME -->
+      <section class="view" data-view="game" aria-label="Minigame">
+        <h2 class="vtitle"><span class="scr">STAND BREACH</span><small>侵入ゲーム</small></h2>
+        <div class="breach">
+          <div class="panel matrix">
+            <div class="panel-head"><span>CODE MATRIX</span><span class="code" id="bState">STANDBY</span></div>
+            <div class="buffer-row"><small>BUFFER</small><div class="buffer" id="bBuffer"></div></div>
+            <div class="grid5" id="bGrid"></div>
+            <div class="b-over" id="bOver"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><span>BREACH TIME</span><span class="code" id="bTime">--</span></div>
+            <div class="btimer" id="bTimer"><div id="bTimerBar"></div></div>
+            <div class="panel-head"><span>DAEMONS TO UPLOAD</span><span class="code" id="bBest"></span></div>
+            <ul class="daemons" id="bDaemons"></ul>
+            <p class="hint">Click a code in the glowing row, then the glowing column, and keep alternating. [R] restart</p>
+          </div>
+        </div>
+      </section>
+
       <!-- COMMS -->
       <section class="view" data-view="comms" aria-label="Contact">
         <h2 class="vtitle"><span class="scr">COMMS</span><small>連絡</small></h2>
@@ -160,7 +182,7 @@
 
     <footer class="statusbar">
       <div class="ticker"><div id="ticker"></div></div>
-      <div class="keys hide-s"><span><b>Q</b><b>E</b> switch</span><span><b>1-5</b> jump</span><span><b>Z</b> stop time</span><span><b>M</b> sfx</span></div>
+      <div class="keys hide-s"><span><b>Q</b><b>E</b> switch</span><span><b>1-6</b> jump</span><span><b>M</b> sfx</span></div>
     </footer>
   </div>
 
@@ -168,9 +190,6 @@
   <div id="reticle" class="reticle" aria-hidden="true"><i></i></div>
   <div class="scanlines" aria-hidden="true"></div>
   <div class="vignette" aria-hidden="true"></div>
-  <div id="timeStop" class="time-stop" aria-hidden="true">
-    <div class="ts-text">時は止まった<small>TIME HAS STOPPED</small><b id="tsCount">5</b></div>
-  </div>
 
   <script src="content.js"></script>
   <script src="app.js"></script>

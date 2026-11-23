@@ -4,14 +4,22 @@ Cyberpunk × JoJo personal website. Plain HTML/CSS/JS, no build step.
 
 ## Edit your content
 Everything personal is in **`content.js`**: headline, about text, Stand stats (radar chart),
-skills, papers and the soundtrack. 
+skills, papers and the soundtrack.
 
-Easter egg: press **Z** (or the ZA WARUDO button) to stop time for 5 seconds.
+PDFs of the theses live in `papers/` and are linked from the Research Archive.
 
 ## Music
-The player never links to Spotify. Each track plays its own generated synthwave loop.
-If you want a track to play a real audio file you're allowed to share, put it in `music/`
-and add `src: "music/file.mp3"` to that track in `content.js`.
+Each track in `content.js` has a `yt` field with its YouTube video ID (the part after `v=`
+in the link). The player streams it through YouTube's embedded player. If YouTube can't be
+reached, or the uploader blocked embedding, that track plays a generated synthwave loop instead.
+Note: YouTube embeds don't work when the page is opened straight from disk (`file://`),
+only once it's served over http(s), e.g. on GitHub Pages.
+You can also use a local audio file by adding `src: "music/file.mp3"` to a track.
+
+## Minigame
+The **GAME** tab (key 5) is "Stand Breach", a breach-protocol style hacking puzzle:
+fill the buffer so it contains the three daemon sequences before the timer runs out.
+Best score is kept in the browser's local storage.
 
 ## Host for free on GitHub Pages
 1. Create a **public** repo named exactly `Joshua1138.github.io`.

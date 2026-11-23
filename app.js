@@ -23,7 +23,7 @@
     drawViz();
   }
   function sfx(kind) {
-    if (!ctx || !sfxOn || document.body.classList.contains("time-stopped")) return;
+    if (!ctx || !sfxOn) return;
     const t = ctx.currentTime;
     const beep = (f1, f2, dur, type = "square", vol = 0.05, at = 0) => {
       const o = ctx.createOscillator(), g = ctx.createGain();
@@ -92,7 +92,7 @@
     "> Is that a JoJo reference? …affirmative.",
     "> Training models with the power of hamon.",
     "> Location: " + S.location + " // status: ONLINE",
-    "> Press Z to stop time.",
+    "> New tab unlocked: GAME. Breach the mainframe.",
   ];
   let li = 0, ci = 0, del = false;
   (function type() {
@@ -134,7 +134,7 @@
       <h3 id="pTitle"></h3>
       <dl class="kv"><dt>AUTHORS</dt><dd>${esc(p.authors)}</dd><dt>VENUE</dt><dd>${esc(p.venue)}</dd><dt>YEAR</dt><dd>${esc(p.year)}</dd></dl>
       <p class="blurb">${esc(p.blurb)}</p>
-      <a class="hbtn" href="${esc(p.url)}" target="_blank" rel="noopener"><span>ORA ORA → ACCESS FILE</span><em>↗</em></a>`;
+      <a class="hbtn" href="${esc(p.url)}" target="_blank" rel="noopener"><span>${esc(p.cta || "ACCESS FILE")}</span><em>↗</em></a>`;
     scramble($("pTitle"), p.title, 700);
   }
   $$(".db-item").forEach((el) => el.addEventListener("click", () => { sfx("click"); showPaper(+el.dataset.i); }));
@@ -150,12 +150,13 @@
     `<a class="contact" href="${esc(href)}" ${href.startsWith("mailto") ? "" : 'target="_blank" rel="noopener"'}><span class="ic">${ic}</span><span><small>${sub}</small><b>${label}</b></span></a>`).join("");
 
   /* ================= VIEWS / TABS ================= */
-  const VIEWS = ["profile", "stand", "archive", "audio", "comms"];
+  const VIEWS = ["profile", "stand", "archive", "audio", "game", "comms"];
   const seen = new Set();
   const firstVisit = {
     stand: ["STAND ANALYSIS COMPLETE", `${S.stats.length} parameters scanned`],
     archive: ["DATA FRAGMENTS ACQUIRED", `${S.papers.length} research entries decrypted`],
     audio: ["AUDIO SUBSYSTEM ONLINE", `${S.tracks.length} tracks loaded`],
+    game: ["BREACH PROTOCOL READY", "upload all three daemons"],
     comms: ["UPLINK ESTABLISHED", "secure channels open"],
   };
   $$(".tab").forEach((t, i) => (t.dataset.n = i + 1));
@@ -193,7 +194,7 @@
   setInterval(() => ($("syncMeter").style.width = 55 + Math.random() * 45 + "%"), 1400);
   $("ticker").textContent = [
     `SUBJECT ${upper} ONLINE`, `STAND ${S.stand.name} CALIBRATED`, "MENACING AURA LEVEL: ゴゴゴゴ",
-    "WEATHER: NEON RAIN, 12°C", "REMINDER: HYDRATE BETWEEN TRAINING RUNS", "PRESS Z TO STOP TIME",
+    "WEATHER: NEON RAIN, 12°C", "REMINDER: HYDRATE BETWEEN TRAINING RUNS", "MINIGAME ONLINE: BREACH THE MAINFRAME",
     `${S.papers.length} RESEARCH ENTRIES IN ARCHIVE`, "ALL SYSTEMS NOMINAL",
   ].join("   ///   ");
 
@@ -223,6 +224,9 @@
   /* ================= MUSIC PLAYER ================= */
   const tracks = S.tracks;
   let audioEl, cur = -1, playing = false, timer = null, stepN = 0, nextTime = 0, song = null;
+  let ytp = null, ytReady = false, ytApi = null, ytMake = null, ytTok = 0, ytTimer = null, ytDead = false;
+  const ytFailed = new Set();
+  const isYT = (i) => i >= 0 && !!tracks[i].yt && !ytDead && !ytFailed.has(i);
   const BARS = 32;
   const hash = (s) => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
   const rng = (seed) => () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
@@ -285,16 +289,25 @@
     }
     $("progBar").style.width = (100 * stepN) / (BARS * 16) + "%";
   }
-  function stopAll() { clearInterval(timer); timer = null; if (audioEl) audioEl.pause(); }
+  function stopAll(keepYT) {
+    clearInterval(timer); timer = null;
+    if (audioEl) audioEl.pause();
+    if (!keepYT && ytReady && ytp.pauseVideo) ytp.pauseVideo();
+  }
   function load(i) {
-    stopAll();
     cur = (i + tracks.length) % tracks.length;
+    stopAll(isYT(cur));
     const t = tracks[cur];
+    $("deck").classList.toggle("yt", isYT(cur));
+    $("modeHint").textContent = isYT(cur)
+      ? "[SPACE] play/pause · streaming from YouTube"
+      : "[SPACE] play/pause · each track plays a generated synthwave loop";
     scramble($("npTitle"), t.title, 500);
     $("npArtist").textContent = t.artist;
     $$("#trackList li").forEach((li, k) => li.classList.toggle("active", k === cur));
     $("progBar").style.width = "0%";
-    if (t.src) {
+    if (isYT(cur)) { $("bpm").textContent = "YOUTUBE"; ytCue(t.yt); }
+    else if (t.src) {
       if (!audioEl) {
         audioEl = new Audio(); audioEl.crossOrigin = "anonymous";
         ctx.createMediaElementSource(audioEl).connect(master);
@@ -310,7 +323,9 @@
   function play() {
     initAudio();
     if (cur < 0) load(0);
-    if (tracks[cur].src) audioEl.play();
+    playing = true;
+    if (isYT(cur)) ytPlay();
+    else if (tracks[cur].src) audioEl.play();
     else { nextTime = Math.max(nextTime, ctx.currentTime + 0.05); clearInterval(timer); timer = setInterval(scheduler, 25); }
     playing = true; ui();
   }
@@ -323,18 +338,84 @@
     $("playBtn").setAttribute("aria-label", playing ? "Pause" : "Play");
     $("disc").classList.toggle("playing", playing);
   }
+  /* ---- YouTube streaming (IFrame API, loaded on first use) ---- */
+  function ytLib() {
+    if (ytApi) return ytApi;
+    ytApi = new Promise((res, rej) => {
+      if (window.YT && YT.Player) return res();
+      window.onYouTubeIframeAPIReady = res;
+      const s = document.createElement("script");
+      s.src = "https://www.youtube.com/iframe_api";
+      s.onerror = () => rej(new Error("yt-load"));
+      document.head.appendChild(s);
+      setTimeout(() => rej(new Error("yt-timeout")), 10000);
+    });
+    return ytApi;
+  }
+  function ytEnsure(id) {
+    return ytLib().then(() => ytMake || (ytMake = new Promise((res) => {
+      const vars = { playsinline: 1, rel: 0, modestbranding: 1 };
+      if (location.protocol.startsWith("http")) vars.origin = location.origin;
+      ytp = new YT.Player("ytPlayer", {
+        host: "https://www.youtube-nocookie.com", width: "100%", height: "100%", videoId: id, playerVars: vars,
+        events: {
+          onReady: () => { ytReady = true; ytp.setVolume(+$("vol").value * 100); ytTimer = setInterval(ytTick, 300); res(ytp); },
+          onStateChange: ytState,
+          onError: () => ytFallback("Embedding is blocked for this track, playing the generated loop instead"),
+        },
+      });
+    })));
+  }
+  function ytFallback(msg, dead) {
+    if (!isYT(cur)) return;
+    if (dead) ytDead = true;
+    const was = playing;
+    ytFailed.add(cur);
+    toast("STREAM UNAVAILABLE", msg);
+    load(cur);
+    if (was) play();
+  }
+  const ytOffline = () => ytFallback("Couldn't reach YouTube, playing generated loops instead", true);
+  function ytCue(id) {
+    const tok = ++ytTok;
+    ytEnsure(id).then((p) => {
+      if (tok !== ytTok) return;
+      if (playing) p.loadVideoById(id); else p.cueVideoById(id);
+    }).catch(ytOffline);
+  }
+  function ytPlay() {
+    const tok = ytTok;
+    ytEnsure(tracks[cur].yt).then((p) => { if (tok === ytTok && playing) p.playVideo(); }).catch(ytOffline);
+  }
+  function ytState(e) {
+    if (!isYT(cur)) return;
+    const PS = YT.PlayerState;
+    if (e.data === PS.ENDED) next();
+    else if (e.data === PS.PLAYING && !playing) { playing = true; ui(); }
+    else if (e.data === PS.PAUSED && playing) { playing = false; ui(); }
+  }
+  function ytTick() {
+    if (!isYT(cur) || !ytReady || !ytp.getDuration) return;
+    const d = ytp.getDuration();
+    if (d) $("progBar").style.width = (100 * ytp.getCurrentTime()) / d + "%";
+  }
+  $("ytWrap").addEventListener("mouseenter", () => $("reticle").classList.add("away"));
+  $("ytWrap").addEventListener("mouseleave", () => $("reticle").classList.remove("away"));
+
   $("trackCount").textContent = `${tracks.length} TRACKS`;
   $("trackList").innerHTML = tracks.map((t) => `<li><div><span class="t">${esc(t.title)}</span><span class="a">${esc(t.artist)}</span></div></li>`).join("");
   $$("#trackList li").forEach((li, k) => li.addEventListener("click", () => { initAudio(); load(k); play(); }));
   $("playBtn").onclick = () => (playing ? pause() : play());
   $("nextBtn").onclick = () => { initAudio(); next(); };
   $("prevBtn").onclick = () => { initAudio(); prev(); };
-  $("vol").oninput = (e) => master && (master.gain.value = +e.target.value);
+  $("vol").oninput = (e) => {
+    if (master) master.gain.value = +e.target.value;
+    if (ytReady) ytp.setVolume(+e.target.value * 100);
+  };
 
   const cv = $("viz"), g2 = cv.getContext("2d");
   function drawViz() {
     requestAnimationFrame(drawViz);
-    if (document.body.classList.contains("time-stopped")) return;
     const w = cv.width, h = cv.height, data = new Uint8Array(analyser.frequencyBinCount);
     analyser.getByteFrequencyData(data);
     g2.clearRect(0, 0, w, h);
@@ -353,30 +434,154 @@
   g2.fillStyle = "rgba(78,242,255,.3)";
   for (let i = 0; i < 60; i++) g2.fillRect(i * 12 + 1, 145, 9, 4);
 
-  /* ================= ZA WARUDO ================= */
-  let stopping = false;
-  function zaWarudo() {
-    if (stopping) return;
-    initAudio();
-    sfx("boot");
-    stopping = true;
-    setTimeout(() => {
-      document.body.classList.add("time-stopped");
-      if (ctx) ctx.suspend();
-    }, 250);
-    let n = 5; $("tsCount").textContent = n;
-    const iv = setInterval(() => {
-      n--; $("tsCount").textContent = n;
-      if (n <= 0) {
-        clearInterval(iv);
-        document.body.classList.remove("time-stopped");
-        if (ctx) ctx.resume();
-        stopping = false;
-        toast("TIME RESUMES", "Toki wa ugoki dasu…");
+  /* ================= MINIGAME: STAND BREACH ================= */
+  const BG = {
+    CODES: ["1C", "55", "BD", "E9", "7A", "FF"], N: 5, BUF: 7, TIME: 40,
+    DAEMONS: [
+      { name: "MENACING.DLL", reward: "ゴゴゴ aura amplified" },
+      { name: "STAND_ARROW.EXE", reward: "Stand awakened" },
+      { name: "YARE_YARE.SYS", reward: "Sigh… access granted" },
+    ],
+  };
+  const bgStore = {
+    get: () => { try { return +localStorage.getItem("jj-breach-best") || 0; } catch { return 0; } },
+    set: (v) => { try { localStorage.setItem("jj-breach-best", v); } catch {} },
+  };
+  const bgPick = (a) => a[(Math.random() * a.length) | 0];
+  let bg = null, bgLast = performance.now();
+
+  function bgNew() {
+    const { CODES, N, BUF } = BG;
+    const grid = Array.from({ length: N }, () => Array.from({ length: N }, () => bgPick(CODES)));
+    let daemons = null, lastTry = null;
+    // Build one guaranteed solvable route, then cut the daemons out of it.
+    for (let tries = 0; tries < 500 && !daemons; tries++) {
+      const used = new Set(), path = [];
+      let r = 0, c = (Math.random() * N) | 0, ok = true;
+      used.add(r + "," + c); path.push([r, c]);
+      for (let k = 1; k < BUF && ok; k++) {
+        const opts = [];
+        for (let i = 0; i < N; i++) {
+          const [rr, cc] = k % 2 ? [i, c] : [r, i];
+          if (!used.has(rr + "," + cc)) opts.push([rr, cc]);
+        }
+        if (!opts.length) { ok = false; break; }
+        [r, c] = bgPick(opts); used.add(r + "," + c); path.push([r, c]);
       }
-    }, 1000);
+      if (!ok) continue;
+      const seq = path.map(([a, b]) => grid[a][b]);
+      const ds = [2, 3, 4].map((L) => { const s = (Math.random() * (BUF - L + 1)) | 0; return seq.slice(s, s + L); });
+      lastTry = ds;
+      const strs = ds.map((d) => " " + d.join(" ") + " ");
+      const clash = strs.some((a, i) => strs.some((b, j) => i !== j && b.includes(a)));
+      if (!clash) daemons = ds;
+    }
+    return { grid, daemons: daemons || lastTry, buf: [], used: new Set(), picks: 0, r: 0, c: 0, phase: "idle", left: BG.TIME, done: [false, false, false], reason: "", score: 0, newBest: false };
   }
-  $("zaWarudo").onclick = zaWarudo;
+  function bgValid(r, c) {
+    if (!bg || bg.phase !== "run" || bg.used.has(r + "," + c)) return false;
+    if (bg.picks === 0) return r === 0;
+    return bg.picks % 2 ? c === bg.c : r === bg.r;
+  }
+  function bgHasMove() {
+    for (let r = 0; r < BG.N; r++) for (let c = 0; c < BG.N; c++) if (bgValid(r, c)) return true;
+    return false;
+  }
+  function bgStatus(d) {
+    const b = bg.buf, L = d.length;
+    for (let i = 0; i + L <= b.length; i++) if (d.every((x, k) => b[i + k] === x)) return { done: true, at: i, matched: L, possible: true };
+    let best = 0;
+    for (let m = Math.min(L - 1, b.length); m > 0; m--) {
+      if (d.slice(0, m).every((x, k) => b[b.length - m + k] === x)) { best = m; break; }
+    }
+    return { done: false, matched: best, possible: L - best <= BG.BUF - b.length };
+  }
+  function bgEnd(reason) {
+    bg.phase = "over"; bg.reason = reason;
+    const up = bg.done.filter(Boolean).length;
+    bg.score = up ? up * 100 + Math.floor(bg.left) : 0;
+    bg.newBest = bg.score > bgStore.get();
+    if (bg.newBest) bgStore.set(bg.score);
+    sfx(up === 3 ? "boot" : "tab");
+  }
+  function bgChoose(r, c) {
+    if (!bgValid(r, c)) return;
+    bg.used.add(r + "," + c); bg.buf.push(bg.grid[r][c]); bg.picks++; bg.r = r; bg.c = c;
+    bg.daemons.forEach((d, i) => {
+      if (!bg.done[i] && bgStatus(d).done) {
+        bg.done[i] = true;
+        sfx("toast");
+      }
+    });
+    if (bg.done.every(Boolean)) bgEnd("All daemons uploaded.");
+    else if (bg.buf.length >= BG.BUF) bgEnd("Buffer full.");
+    else if (!bgHasMove()) bgEnd("No valid moves left.");
+    bgRender();
+  }
+  function bgTimer() {
+    $("bTime").textContent = bg.phase === "idle" ? "--" : bg.left.toFixed(1) + "s";
+    $("bTimerBar").style.width = (100 * bg.left) / BG.TIME + "%";
+    $("bTimer").classList.toggle("low", bg.phase === "run" && bg.left < 10);
+  }
+  function bgRender() {
+    const g = bg, line = (r, c) => g.phase === "run" && (g.picks === 0 ? r === 0 : g.picks % 2 ? c === g.c : r === g.r);
+    $("bGrid").innerHTML = g.grid.map((row, r) => row.map((code, c) => {
+      const used = g.used.has(r + "," + c), ok = bgValid(r, c);
+      const cls = ["cell", used && "used", ok && "avail", line(r, c) && !used && "line", g.phase === "run" && !ok && !used && "dim"].filter(Boolean).join(" ");
+      return `<button class="${cls}" data-r="${r}" data-c="${c}" ${ok ? "" : "disabled"} aria-label="code ${code}">${code}</button>`;
+    }).join("")).join("");
+
+    const sts = g.daemons.map(bgStatus), marked = new Set();
+    sts.forEach((s, i) => {
+      const L = g.daemons[i].length;
+      if (s.done) for (let k = 0; k < L; k++) marked.add(s.at + k);
+      else for (let k = 0; k < s.matched; k++) marked.add(g.buf.length - s.matched + k);
+    });
+    $("bBuffer").innerHTML = Array.from({ length: BG.BUF }, (_, i) =>
+      `<span class="slot${i < g.buf.length ? " on" : ""}${marked.has(i) ? " m" : ""}">${i < g.buf.length ? g.buf[i] : "··"}</span>`).join("");
+
+    $("bDaemons").innerHTML = g.daemons.map((d, i) => {
+      const s = sts[i], fail = g.phase !== "idle" && !s.done && !s.possible;
+      return `<li class="${s.done ? "done" : fail ? "fail" : ""}"><div class="dn"><span>${esc(BG.DAEMONS[i].name)}</span><em>${s.done ? "UPLOADED" : fail ? "FAILED" : "LEN " + d.length}</em></div>` +
+        `<div class="dc">${d.map((x, k) => `<i class="${s.done || k < s.matched ? "m" : ""}">${x}</i>`).join("")}</div>` +
+        `<div class="rw">${esc(BG.DAEMONS[i].reward)}</div></li>`;
+    }).join("");
+
+    $("bState").textContent = g.phase === "idle" ? "STANDBY" : g.phase === "run" ? "BREACH IN PROGRESS" : "BREACH ENDED";
+    $("bBest").textContent = bgStore.get() ? "BEST " + bgStore.get() : "NO RECORD";
+
+    const ov = $("bOver");
+    if (g.phase === "run") { ov.className = "b-over"; ov.innerHTML = ""; }
+    else {
+      const up = g.done.filter(Boolean).length;
+      ov.className = "b-over show";
+      if (g.phase === "idle") {
+        ov.innerHTML = `<h3>BREACH PROTOCOL</h3><p>Pick a code in the glowing row, then in the glowing column, and keep alternating. Fill the buffer so it contains the daemon sequences before time runs out.</p>` +
+          `<button class="hbtn" id="bStart"><span>INITIATE BREACH</span><em>R</em></button>`;
+      } else {
+        const head = up === 3 ? "BREACH COMPLETE" : up ? "PARTIAL BREACH" : "BREACH FAILED";
+        const sub = up === 3 ? "「Yare yare daze…」 the mainframe is yours." : up ? `${up}/3 daemons uploaded.` : "The dataset was never clean.";
+        ov.innerHTML = `<h3>${head}</h3><p>${sub}</p><p class="score">${esc(g.reason)} SCORE ${g.score}${g.newBest && g.score ? " · NEW BEST" : ""}</p>` +
+          (up === 3 ? `<div class="tbc"><span>To Be Continued</span><b>⟸</b></div>` : "") +
+          `<button class="hbtn" id="bStart"><span>RETRY</span><em>R</em></button>`;
+      }
+    }
+    bgTimer();
+  }
+  function bgStart() {
+    bg = bgNew(); bg.phase = "run"; bgLast = performance.now();
+    bgRender();
+  }
+  $("bGrid").addEventListener("click", (e) => { const b = e.target.closest(".cell"); if (b) bgChoose(+b.dataset.r, +b.dataset.c); });
+  $("bOver").addEventListener("click", (e) => { if (e.target.closest("#bStart")) bgStart(); });
+  setInterval(() => {
+    const now = performance.now(), dt = Math.min(0.25, (now - bgLast) / 1000);
+    bgLast = now;
+    if (bg.phase !== "run" || current !== "game") return; // the clock only runs while the tab is open
+    bg.left = Math.max(0, bg.left - dt);
+    if (bg.left <= 0) { bgEnd("Time ran out."); bgRender(); } else bgTimer();
+  }, 100);
+  bg = bgNew(); bgRender();
 
   /* ================= KEYBOARD ================= */
   addEventListener("keydown", (e) => {
@@ -385,8 +590,8 @@
     const k = e.key.toLowerCase();
     if (k === "q") step(-1);
     else if (k === "e") step(1);
-    else if (k >= "1" && k <= "5") setView(VIEWS[+k - 1]);
-    else if (k === "z") zaWarudo();
+    else if (k >= "1" && k <= "6") setView(VIEWS[+k - 1]);
+    else if (k === "r" && current === "game") bgStart();
     else if (k === "m") toggleSfx();
     else if (k === " " && current === "audio") { e.preventDefault(); playing ? pause() : play(); }
   });

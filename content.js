@@ -53,49 +53,63 @@ window.SITE = {
   ],
 
   /* PAPERS */
+  // Each entry: url can be a web link or a PDF in /papers. cta = button label.
   papers: [
-    {
-      title: "Auto deep learning for bioacoustic signals",
-      authors: "G. Tosato, A. Shehata, J. Janssen, K. Kamp, P. Jati, D. Stowell",
-      venue: "arXiv preprint",
-      year: "2023",
-      url: "https://arxiv.org/abs/2311.04945",
-      blurb:
-        "Can automated deep learning beat hand-built models at classifying bird calls? Using " +
-        "AutoKeras for architecture search and tuning on the Western Mediterranean Wetland Birds " +
-        "dataset, the resulting model consistently outperformed MobileNet, ResNet50 and VGG16, " +
-        "with reproducibility guidelines for bioacoustics on top.",
-      tag: "PREPRINT",
-    },
     {
       title: "Watching Without Waiting: Real-Time Work-State Recognition for Collaborative Robots",
       authors: "Joshua Janssen",
-      venue: "Master's thesis, Tilburg University",
+      venue: "MSc thesis, Cognitive Science & AI, Tilburg University",
       year: "2026",
-      url: "https://arno.uvt.nl/show.cgi?fid=179634",
+      url: "papers/watching-without-waiting-msc-thesis.pdf",
+      cta: "OPEN THESIS PDF",
       blurb:
-        "How well can a robot read what a person is doing in real time, from one overhead camera " +
-        "and 2D skeleton pose alone? I made a causal (past-only) MS-TCN that reaches 74.9% frame " +
-        "accuracy on IKEA furniture assembly, within a point of the model that sees the future, " +
-        "and built a dependency graph showing which assembly steps a cobot could take over.",
-      tag: "THESIS",
+        "A causal, past-only MS-TCN recognises busy, in-between and idle work states from a single " +
+        "overhead camera in real time, reaching 74.9% frame accuracy on IKEA furniture assembly, " +
+        "within a point of the model that sees the future.",
+      tag: "MSC THESIS",
+    },
+    {
+      title: "Comparative Analysis of Machine Learning Algorithms for Fake News Detection",
+      authors: "Joshua Janssen",
+      venue: "BSc thesis, Cognitive Science & AI, Tilburg University",
+      year: "2024",
+      url: "papers/fake-news-detection-bsc-thesis.pdf",
+      cta: "OPEN THESIS PDF",
+      blurb:
+        "Naive Bayes, logistic regression, SVM and LSTM-based networks compared on about 76,500 " +
+        "real and fake news articles: the SVM won with 94% accuracy, ahead of logistic regression " +
+        "and the best deep model (both 91%).",
+      tag: "BSC THESIS",
+    },
+    {
+      title: "Auto deep learning for bioacoustic signals",
+      authors: "Giulio Tosato, Abdelrahman Shehata, Joshua Janssen, Kees Kamp, Pramatya Jati, Dan Stowell",
+      venue: "arXiv preprint (cs.LG), Tilburg University & Naturalis Biodiversity Center",
+      year: "2023",
+      url: "https://arxiv.org/abs/2311.04945",
+      cta: "OPEN ON ARXIV",
+      blurb:
+        "AutoKeras-designed networks consistently beat MobileNet, ResNet50 and VGG16 at classifying " +
+        "the calls of 20 wetland bird species, with no manual feature engineering or model design.",
+      tag: "PREPRINT",
     },
   ],
 
   /* SOUNDTRACK — songs from the favourites playlist.
-     The player never links to Spotify. Each song gets its own generated
-     synthwave loop so the player always makes sound. If you want the real
-     song to play instead, drop an mp3 you're allowed to use into /music and
-     set  src: "music/filename.mp3". */
+     yt = the YouTube video ID (the part after v= in the link). The player
+     streams it through YouTube's embedded player, so the real song plays.
+     If YouTube can't be reached or embedding is blocked for a video, that
+     track falls back to a generated synthwave loop. You can also use a local
+     file instead with  src: "music/filename.mp3". */
   tracks: [
-    { title: "Half the World Away", artist: "Oasis" },
-    { title: "Favourite", artist: "Fontaines D.C." },
-    { title: "My Own Worst Enemy", artist: "Lit" },
-    { title: "What's Up?", artist: "Mom Jeans" },
-    { title: "Oddloop", artist: "frederic" },
-    { title: "My Blood", artist: "DI-RECT" },
-    { title: "No Surprises", artist: "Radiohead" },
-    { title: "Space Dementia", artist: "Muse" },
-    { title: "Volevo essere un duro (Dal vivo all'Abbazia di San Galgano)", artist: "Lucio Corsi" },
+    { title: "Half the World Away", artist: "Oasis", yt: "zMlMvrmWz84" },
+    { title: "Favourite", artist: "Fontaines D.C.", yt: "0a_vpigwDb4" },
+    { title: "My Own Worst Enemy", artist: "Lit", yt: "sc5iTNVEOAg" },
+    { title: "What's Up?", artist: "Mom Jeans", yt: "6c5xITzAhjw" },
+    { title: "Oddloop", artist: "frederic", yt: "PCp2iXA1uLE" },
+    { title: "My Blood", artist: "DI-RECT", yt: "DfAPU8TN_Ms" },
+    { title: "No Surprises", artist: "Radiohead", yt: "u5CVsCnxyXg" },
+    { title: "Space Dementia", artist: "Muse", yt: "-bNnekk2_Yk" },
+    { title: "Volevo Essere Un Duro", artist: "Lucio Corsi", yt: "Vlu5XXDwHos" },
   ],
 };
