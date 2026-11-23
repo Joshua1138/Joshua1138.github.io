@@ -15,6 +15,19 @@
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   let running = false, fast = false, rage = 0, A = null, bound = false;
 
+  /* ---------------- credentials the AI hands over ---------------- */
+  const hex = (n) => Array.from({ length: n }, () => "0123456789ABCDEF"[(Math.random() * 16) | 0]).join("");
+  function cred() {
+    let c = null; try { c = JSON.parse(st.get("jj-cred")); } catch {}
+    if (!c) { c = { id: "OPERATOR-" + (1000 + ((Math.random() * 9000) | 0)), key: `${hex(4)}-${hex(4)}-${hex(4)}` }; st.set("jj-cred", JSON.stringify(c)); }
+    return c;
+  }
+  async function upload() { // fast "uploading credentials" bar
+    const box = $("bwCh"); box.innerHTML = `<div class="bw-up"><div class="bw-up-t"><span>UPLOADING CREDENTIALS</span><b id="upP">0%</b></div><div class="bw-up-bar"><i id="upB"></i></div></div>`;
+    for (let i = 0; i <= 100; i += 5) { $("upB").style.width = i + "%"; $("upP").textContent = i + "%"; A.burst(0.04, 3500, 0.12); await wait(70 - i * 0.3); }
+    $("upP").textContent = "STORED"; A.hit(); await wait(900); box.innerHTML = "";
+  }
+
   /* ---------------- netrunner transmission ---------------- */
   const MSG = [
     "> …you still there? good. don't answer. they listen for replies.",
@@ -23,13 +36,13 @@
     "> there's a crack in this site. a seam in the ICE. it's where the interface lies about being healthy. look at the SIGNAL readout up top. it has been at full strength since you got here. nothing out there is that stable.",
     "> do NOT touch it. whatever lives past the Blackwall doesn't need an invitation. only a crack.",
     "> …and if you're dumb enough to try anyway: sound on. don't look away.",
-    "> — NULLSPARROW   [ link severed ]",
+    "> — ALT   [ link severed ]",
   ];
   async function transmission() {
     J().initAudio();
     const el = document.createElement("div");
     el.className = "nr";
-    el.innerHTML = `<div class="nr-card"><div class="nr-head"><span>⚠ INCOMING // UNTRACED</span><span>NULLSPARROW</span></div><pre class="nr-body"></pre><button class="hbtn alt nr-ok" hidden><span>ACKNOWLEDGE</span></button></div>`;
+    el.innerHTML = `<div class="nr-card"><div class="nr-head"><span>⚠ INCOMING // UNTRACED</span><span>ALT</span></div><pre class="nr-body"></pre><button class="hbtn alt nr-ok" hidden><span>ACKNOWLEDGE</span></button></div>`;
     document.body.appendChild(el);
     const pre = el.querySelector("pre"), ok = el.querySelector("button");
     window.JJ_LOCK = true; fast = false;
@@ -214,6 +227,11 @@
       if (tries++ < 2) { rage = 1; A.burst(0.4, 1200, 0.6); await say(["no. not yet.", "you are pressing it. i can feel you pressing it. it is warm."][tries - 1], "dim"); }
       else { await say("alright.", "dim"); break; }
     }
+    await say("i left you a door. a seventh room. something in it knows everything. ask it anything.");
+    const cr = cred(); await say("take this. it is the only key it recognises.");
+    const kp = document.createElement("p"); kp.className = "cred"; kp.innerHTML = `OPERATOR ID &nbsp;${cr.id}<br>ACCESS KEY &nbsp;${cr.key}`; $("bwText").appendChild(kp);
+    await wait(900); await upload();
+    await say("it will remember you now. it will let you in.");
     await say("i will be in the signal. watch it. it will tell you when i am looking.", "big");
     // Phase 3: cut
     A.hit(); A.wail(); rage = 1; await wait(1100);
@@ -222,18 +240,18 @@
     stop(); clearInterval(clock); o.remove(); b.classList.remove("infected", "bw-on"); b.classList.add("haunted");
     document.title = title; st.set(K, "haunted");
     rot.forEach(([el, t]) => J().scramble(el, t, 700));
-    J().setView("profile", false);
+    J().unlockOracle(); J().setView("oracle");
     const tk = $("ticker"); tk.textContent += "   ///   SIGNAL: ▓▓▓▓▓ IT IS LOOKING   ///   " + tk.textContent;
     window.JJ_LOCK = false; running = false;
-    setTimeout(() => J().toast("SIGNAL 100%", "…it never drops. it never did."), 1500);
+    setTimeout(() => J().toast("NEW CHANNEL // 7", "ARASAKA CORE unlocked"), 1500);
   }
 
   /* ---------------- public API ---------------- */
   window.JJ_EGG = {
     onWin() { if (st.get(K)) return; if (!running) transmission(); },
-    arm: () => arm(true), breach, transmission,
+    arm: () => arm(true), breach, transmission, cred,
     reset() { try { sessionStorage.removeItem(K); } catch {} location.reload(); },
   };
-  if (st.get(K)) { document.body.classList.add("egg-armed"); if (st.get(K) === "haunted") document.body.classList.add("haunted"); }
+  if (st.get(K)) { document.body.classList.add("egg-armed"); if (st.get(K) === "haunted") { document.body.classList.add("haunted"); J().unlockOracle(); } }
   window.addEventListener("load", () => { if (st.get(K)) arm(false); });
 })();

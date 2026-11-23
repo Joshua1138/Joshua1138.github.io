@@ -158,6 +158,7 @@
     audio: ["AUDIO SUBSYSTEM ONLINE", `${S.tracks.length} tracks loaded`],
     game: ["BREACH PROTOCOL READY", "upload all three daemons"],
     comms: ["UPLINK ESTABLISHED", "secure channels open"],
+    oracle: ["ARASAKA CORE ONLINE", "all-knowing. allegedly."],
   };
   $$(".tab").forEach((t, i) => (t.dataset.n = i + 1));
   let current = null;
@@ -178,6 +179,7 @@
     $$(`.view[data-view="${name}"] .scr`).forEach((el) => scramble(el));
     if (name === "profile") scramble($("heroName"), upper, 900);
     try { history.replaceState(null, "", "#" + name); } catch {}
+    if (window.JJ_VIEW) window.JJ_VIEW(name);
     const at = $$(".tab.active")[0], tb = $("tabs"); if (at) tb.scrollLeft = at.offsetLeft - (tb.clientWidth - at.offsetWidth) / 2;
     if (bootDone && !seen.has(name)) { seen.add(name); if (firstVisit[name]) setTimeout(() => toast(...firstVisit[name]), 350); }
   }
@@ -440,7 +442,7 @@
     DAEMONS: [
       { name: "MENACING.DLL", reward: "ゴゴゴ aura amplified" },
       { name: "STAND_ARROW.EXE", reward: "Stand awakened" },
-      { name: "YARE_YARE.SYS", reward: "Sigh… access granted" },
+      { name: "HAMON_PULSE.SYS", reward: "Sigh… access granted" },
     ],
   };
   const bgStore = {
@@ -561,9 +563,8 @@
           `<button class="hbtn" id="bStart"><span>INITIATE BREACH</span><em>R</em></button>`;
       } else {
         const head = up === 3 ? "BREACH COMPLETE" : up ? "PARTIAL BREACH" : "BREACH FAILED";
-        const sub = up === 3 ? "「Yare yare daze…」 the mainframe is yours." : up ? `${up}/3 daemons uploaded.` : "The dataset was never clean.";
+        const sub = up === 3 ? "The mainframe is yours." : up ? `${up}/3 daemons uploaded.` : "The dataset was never clean.";
         ov.innerHTML = `<h3>${head}</h3><p>${sub}</p><p class="score">${esc(g.reason)} SCORE ${g.score}${g.newBest && g.score ? " · NEW BEST" : ""}</p>` +
-          (up === 3 ? `<div class="tbc"><span>To Be Continued</span><b>⟸</b></div>` : "") +
           `<button class="hbtn" id="bStart"><span>RETRY</span><em>R</em></button>`;
       }
     }
@@ -592,7 +593,7 @@
     const k = e.key.toLowerCase();
     if (k === "q") step(-1);
     else if (k === "e") step(1);
-    else if (k >= "1" && k <= "6") setView(VIEWS[+k - 1]);
+    else if (k >= "1" && k <= "7" && VIEWS[+k - 1]) setView(VIEWS[+k - 1]);
     else if (k === "r" && current === "game") bgStart();
     else if (k === "m") toggleSfx();
     else if (k === " " && current === "audio") { e.preventDefault(); playing ? pause() : play(); }
@@ -631,7 +632,8 @@
     current = null; setView(location.hash.slice(1) || "profile", false);
     setTimeout(() => toast("CONNECTION ESTABLISHED", `Welcome to ${S.name}'s system.`), 600);
   }
-  window.JJ = {
+  function unlockOracle() { if (!VIEWS.includes("oracle")) VIEWS.push("oracle"); $$(".oracle-tab")[0].hidden = false; }
+  window.JJ = { unlockOracle,
     get ctx() { return ctx; }, get sfxOn() { return sfxOn; }, initAudio, pause, toast, scramble, setView, seen, $, esc,
   };
   $("jackIn").onclick = finishBoot;

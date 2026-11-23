@@ -415,3 +415,67 @@ body.haunted #roSignal .signal i:nth-child(2) { animation: sigcrack 5.3s steps(1
 body.haunted #roSignal small::after { content: " ●"; color: #b3121f; animation: hexpulse 1.1s infinite; }
 @media (max-width: 600px) { .bw-text { bottom: 190px; } .bw-top span:nth-child(2) { display: none; } }
 .nr-ok[hidden] { display: none; }
+
+/* ==========================================================================
+   ARASAKA CORE (oracle tab) — black / white / gold
+   ========================================================================== */
+.oracle { --g: #e6cf3a; --g2: #b9a21c; --gd: rgba(230,207,58,.3); padding: 0 34px; }
+.oracle-tab { color: var(--g, #e6cf3a) !important; }
+.oracle-tab.active { text-shadow: 0 0 12px rgba(230,207,58,.5); }
+.oracle .vtitle::before { background: var(--g); box-shadow: 0 0 12px var(--g); }
+.oracle .vtitle small { color: var(--g); }
+.or-plate { display: flex; align-items: center; gap: 18px; background: #fff; color: #000; padding: 12px 22px; margin-bottom: 18px; position: relative; overflow: hidden;
+  clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px)); }
+.or-plate::after { content: ""; position: absolute; inset: 0 0 0 auto; width: 34%; pointer-events: none; background: repeating-linear-gradient(115deg, rgba(230,207,58,.9) 0 14px, rgba(185,162,28,.9) 14px 18px, rgba(240,226,110,.9) 18px 40px); clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 100%); opacity: .95; }
+.or-logo { height: 64px; flex: none; } .or-logo img { height: 100%; width: auto; display: block; }
+.or-plate-t { display: flex; flex-direction: column; position: relative; z-index: 1; }
+.or-plate-t b { font-size: clamp(20px, 3.4vw, 30px); letter-spacing: 8px; line-height: 1; font-weight: 700; }
+@media (max-width: 800px) { .or-plate { flex-wrap: wrap; } .or-logo { height: 48px; } }
+.or-plate-t span { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; margin-top: 4px; }
+.or-plate-t em { font-style: normal; background: #000; color: var(--g); padding: 0 5px; }
+.or-link { margin-left: auto; position: relative; z-index: 1; font-family: var(--mono); font-size: 11px; letter-spacing: 2px; background: #000; color: var(--g); padding: 5px 10px; white-space: nowrap; }
+.or-link i { display: inline-block; width: 7px; height: 7px; background: var(--g); margin-right: 6px; animation: hexpulse 1.2s infinite; }
+.or-grid { display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr); gap: 18px; }
+.or-panel { background: rgba(5,5,4,.92); border: 1px solid var(--gd); padding: 16px 18px 18px; position: relative;
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px)); box-shadow: inset 0 0 50px rgba(230,207,58,.05); }
+.or-panel::after { content: ""; position: absolute; left: 0; bottom: 0; width: 70px; height: 3px; background: var(--g); }
+.or-head { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 12px; letter-spacing: 2px; color: var(--g); border-bottom: 1px solid var(--gd); padding-bottom: 8px; margin-bottom: 12px; }
+#orWave { display: block; width: 100%; height: 170px; background: linear-gradient(rgba(230,207,58,.05) 1px, transparent 1px) 0 0 / 100% 22px, #000; border: 1px solid var(--gd); }
+.or-out { height: 190px; overflow-y: auto; margin: 12px 0; font-family: var(--mono); font-size: 14px; line-height: 1.5; scrollbar-width: thin; scrollbar-color: var(--g) transparent; }
+.or-out p { margin: 0 0 6px; } .or-out .sys { color: #8a8678; } .or-out .q { color: #fff; }
+.or-out .ai { color: var(--g); font-size: 17px; letter-spacing: 1px; font-weight: 700; text-shadow: 0 0 10px rgba(230,207,58,.35); }
+.or-out .meta { color: #7d7a6c; font-size: 11px; letter-spacing: 2px; } .or-out .wise { color: #d8d3c0; font-style: italic; }
+.or-in { display: flex; align-items: center; gap: 10px; border: 1px solid var(--g2); background: #000; padding: 4px 4px 4px 12px; }
+.or-in span { font-family: var(--mono); font-size: 12px; color: var(--g); letter-spacing: 2px; }
+.or-in input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; color: #fff; font-family: var(--mono); font-size: 15px; padding: 8px 4px; }
+.or-in input::placeholder { color: #5f5c50; } .or-in input:disabled { opacity: .5; }
+.or-btn { background: var(--g); color: #000; border: 0; font-weight: 700; letter-spacing: 3px; padding: 9px 16px; font-size: 14px; }
+.or-btn:hover:not(:disabled) { background: #fff; } .or-btn:disabled { opacity: .4; }
+.or-tel { list-style: none; margin: 0; padding: 0; font-family: var(--mono); font-size: 13px; }
+.or-tel li { display: flex; justify-content: space-between; gap: 8px; padding: 9px 0; border-bottom: 1px dashed rgba(230,207,58,.18); color: #8a8678; }
+.or-tel b { color: #fff; font-weight: 400; }
+.or-note { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; color: #6f6c5f; margin: 14px 0 0; }
+.or-vert { position: absolute; top: 0; bottom: 0; writing-mode: vertical-rl; font-size: 13px; letter-spacing: 6px; color: var(--g); opacity: .55; pointer-events: none; text-align: center; }
+.or-vert.l { left: 4px; } .or-vert.r { right: 4px; }
+body.infected .oracle { --g: #b3121f; }
+@media (max-width: 800px) { .or-grid { grid-template-columns: 1fr; } .or-plate::after { opacity: .5; } .or-link { display: none; } .oracle { padding: 0 24px; } }
+
+/* real logo on the plate */
+.or-logo { height: 72px; width: auto; max-width: 56%; flex: none; object-fit: contain; display: block; position: relative; z-index: 1; }
+.or-plate-t span:first-child { font-size: 13px; letter-spacing: 3px; font-weight: 700; margin: 0; }
+.or-plate-t span + span { margin-top: 4px; }
+/* login screen */
+.oracle.locked .or-grid { display: none; } .oracle:not(.locked) .or-login { display: none; }
+.or-login { max-width: 620px; margin: 28px auto; background: rgba(5,5,4,.94); border: 1px solid var(--gd); padding: 20px 24px 22px; position: relative;
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px)); box-shadow: inset 0 0 50px rgba(230,207,58,.06); }
+.or-login::after { content: ""; position: absolute; left: 0; bottom: 0; width: 70px; height: 3px; background: var(--g); }
+.or-field { margin-bottom: 14px; } .or-field label { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: 3px; color: #8a8678; margin-bottom: 5px; }
+.or-val { min-height: 44px; border: 1px solid var(--g2); background: #000; color: #fff; font-family: var(--mono); font-size: 18px; letter-spacing: 3px; padding: 9px 14px; }
+.or-val:empty::after { content: "▌"; color: var(--g); animation: hexpulse 1s infinite; }
+.or-lbar { height: 6px; border: 1px solid var(--gd); margin-top: 18px; padding: 1px; } .or-lbar div { height: 100%; width: 0; background: repeating-linear-gradient(90deg, var(--g) 0 8px, transparent 8px 10px); }
+.or-lmsg { font-family: var(--mono); font-size: 12px; color: #8a8678; margin: 10px 0 0; letter-spacing: 1px; }
+/* credential handoff in the encounter */
+.bw-text p.cred { font-size: 16px; letter-spacing: 3px; color: #e6cf3a; border-left: 3px solid #e6cf3a; padding-left: 12px; opacity: 1 !important; }
+.bw-up { width: min(560px, 100%); } .bw-up-t { display: flex; justify-content: space-between; font-size: 12px; letter-spacing: 4px; color: #e6cf3a; margin-bottom: 6px; }
+.bw-up-bar { height: 10px; border: 1px solid #e6cf3a; padding: 1px; } .bw-up-bar i { display: block; height: 100%; width: 0; background: repeating-linear-gradient(90deg, #e6cf3a 0 8px, transparent 8px 10px); }
+@media (max-width: 800px) { .or-logo { height: 46px; } }

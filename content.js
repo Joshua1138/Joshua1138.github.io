@@ -26,7 +26,7 @@ window.SITE = {
     "I turn raw signals into something you can act on: birdsong, skeleton poses, spreadsheets " +
     "nobody dared open. Between training runs you'll find me over-tuning hyperparameters, " +
     "hunting for the one feature that explains everything, and curating playlists that are " +
-    "far too long. Yare yare daze: the dataset was never clean, but the model will still ship.",
+    "far too long. The dataset was never clean, but the model will still ship.",
 
   links: {
     github: "https://github.com/Joshua1138",

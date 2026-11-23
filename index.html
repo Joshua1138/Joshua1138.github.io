@@ -48,6 +48,7 @@
       <button data-view="audio" class="tab">AUDIO</button>
       <button data-view="game" class="tab">GAME</button>
       <button data-view="comms" class="tab">COMMS</button>
+      <button data-view="oracle" class="tab oracle-tab" hidden>ORACLE</button>
       <span class="key">E</span>
     </nav>
 
@@ -174,9 +175,39 @@
       <section class="view" data-view="comms" aria-label="Contact">
         <h2 class="vtitle"><span class="scr">COMMS</span><small>連絡</small></h2>
         <div class="comms" id="contactLinks"></div>
-        <p class="yare">“Yare yare daze… you made it to the end.”</p>
-        <div class="tbc"><span>To Be Continued</span><b>⟸</b></div>
         <p class="copy">© <span id="year"></span> Joshua Janssen · built with neon &amp; hamon</p>
+      </section>
+
+      <!-- ORACLE (unlocked by the Blackwall encounter) -->
+      <section class="view oracle locked" data-view="oracle" aria-label="Arasaka core">
+        <h2 class="vtitle"><span class="scr">ARASAKA CORE</span><small>荒坂 · 量子演算</small></h2>
+        <div class="or-plate">
+          <img class="or-logo" src="img/arasaka-logo.png" alt="Arasaka" />
+          <div class="or-plate-t"><span>SUBLEVEL 77 // AGI ORACLE</span><span>CLEARANCE: <em>ABSOLUTE</em></span></div>
+          <div class="or-link"><i></i> UPLINK SECURE</div>
+        </div>
+        <div class="or-login" id="orLogin">
+          <div class="or-head"><span>SECURE AUTHENTICATION</span><span id="orLs">AWAITING CREDENTIALS</span></div>
+          <div class="or-field"><label>OPERATOR ID</label><div class="or-val" id="orUser"></div></div>
+          <div class="or-field"><label>ACCESS KEY</label><div class="or-val" id="orPass"></div></div>
+          <div class="or-lbar"><div id="orLb"></div></div>
+          <p class="or-lmsg" id="orLmsg">&gt; no active session</p>
+        </div>
+        <div class="or-grid">
+          <div class="or-panel">
+            <div class="or-head"><span>QUERY INTERFACE</span><span id="orState">CONNECTING</span></div>
+            <canvas id="orWave" width="900" height="200" aria-hidden="true"></canvas>
+            <div class="or-out" id="orOut" aria-live="polite"></div>
+            <div class="or-in"><span>QUERY&gt;</span><input id="orInput" type="text" maxlength="140" placeholder="ask the all-knowing core anything…" autocomplete="off" spellcheck="false" /><button id="orSend" class="or-btn">TRANSMIT</button></div>
+          </div>
+          <aside class="or-panel or-side">
+            <div class="or-head"><span>CORE TELEMETRY</span><span>LIVE</span></div>
+            <ul class="or-tel" id="orTel"></ul>
+            <p class="or-note">DISCLAIMER: all responses are final, certified, and fully authoritative.</p>
+          </aside>
+        </div>
+        <div class="or-vert l" aria-hidden="true">明日は私たち全員がより良い日に向かって努力します</div>
+        <div class="or-vert r" aria-hidden="true">明日は私たち全員がより良い日に向かって努力します</div>
       </section>
     </main>
 
@@ -194,5 +225,6 @@
   <script src="content.js"></script>
   <script src="app.js"></script>
   <script src="blackwall.js"></script>
+  <script src="oracle.js"></script>
 </body>
 </html>
