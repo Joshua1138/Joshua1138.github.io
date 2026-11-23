@@ -1,0 +1,431 @@
+(() => {
+  const S = window.SITE;
+  const $ = (id) => document.getElementById(id);
+  const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const store = { get: (k) => { try { return sessionStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { sessionStorage.setItem(k, v); } catch {} } };
+  const fine = matchMedia("(pointer: fine)").matches;
+
+  /* ================= AUDIO CONTEXT + UI SOUNDS ================= */
+  let ctx, master, analyser, sfxGain, noiseBuf, sfxOn = true;
+  function initAudio() {
+    if (ctx) { ctx.resume(); return; }
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    master = ctx.createGain(); master.gain.value = +$("vol").value;
+    analyser = ctx.createAnalyser(); analyser.fftSize = 256;
+    const delay = ctx.createDelay(); delay.delayTime.value = 0.33;
+    const fb = ctx.createGain(); fb.gain.value = 0.28;
+    master.connect(analyser); master.connect(delay); delay.connect(fb); fb.connect(delay); delay.connect(analyser);
+    analyser.connect(ctx.destination);
+    sfxGain = ctx.createGain(); sfxGain.gain.value = 0.5; sfxGain.connect(ctx.destination);
+    noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+    const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    drawViz();
+  }
+  function sfx(kind) {
+    if (!ctx || !sfxOn || document.body.classList.contains("time-stopped")) return;
+    const t = ctx.currentTime;
+    const beep = (f1, f2, dur, type = "square", vol = 0.05, at = 0) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type; o.frequency.setValueAtTime(f1, t + at); o.frequency.exponentialRampToValueAtTime(f2, t + at + dur);
+      g.gain.setValueAtTime(vol, t + at); g.gain.exponentialRampToValueAtTime(0.0001, t + at + dur);
+      o.connect(g); g.connect(sfxGain); o.start(t + at); o.stop(t + at + dur + 0.02);
+    };
+    if (kind === "hover") beep(2400, 2200, 0.03, "sine", 0.03);
+    else if (kind === "click") { beep(900, 1800, 0.06); beep(1800, 1800, 0.04, "square", 0.03, 0.05); }
+    else if (kind === "tab") {
+      const s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      s.buffer = noiseBuf; f.type = "bandpass"; f.Q.value = 4; f.frequency.setValueAtTime(600, t); f.frequency.exponentialRampToValueAtTime(5000, t + 0.18);
+      g.gain.setValueAtTime(0.25, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+      s.connect(f); f.connect(g); g.connect(sfxGain); s.start(t); s.stop(t + 0.22);
+      beep(300, 120, 0.12, "sawtooth", 0.04);
+    }
+    else if (kind === "toast") { beep(1200, 1200, 0.07, "triangle", 0.06); beep(1600, 1600, 0.09, "triangle", 0.06, 0.08); }
+    else if (kind === "boot") { [0, 0.09, 0.18].forEach((a, i) => beep(400 * (i + 1), 400 * (i + 1), 0.08, "square", 0.05, a)); beep(80, 40, 0.6, "sine", 0.4, 0.25); }
+    else if (kind === "tick") beep(3000, 3000, 0.01, "square", 0.015);
+  }
+
+  /* ================= TOASTS ================= */
+  function toast(head, body) {
+    const el = document.createElement("div");
+    el.className = "toast";
+    el.innerHTML = `<small>${esc(head)}</small><span>${esc(body)}</span>`;
+    $("toasts").appendChild(el);
+    sfx("toast");
+    setTimeout(() => { el.classList.add("out"); setTimeout(() => el.remove(), 320); }, 3400);
+  }
+
+  /* ================= TEXT DECODE EFFECT ================= */
+  const GLYPHS = "!<>-_\\/[]{}=+*^?#01ABCDEFアイウエオカキクケコ";
+  function scramble(el, text, dur = 650) {
+    text = text ?? el.dataset.final ?? el.textContent;
+    el.dataset.final = text;
+    const start = performance.now();
+    cancelAnimationFrame(el._raf);
+    const frame = (now) => {
+      const p = Math.min(1, (now - start) / dur), rev = Math.floor(p * text.length);
+      let out = text.slice(0, rev);
+      for (let i = rev; i < text.length; i++) out += text[i] === " " ? " " : GLYPHS[(Math.random() * GLYPHS.length) | 0];
+      el.textContent = out;
+      if (p < 1) el._raf = requestAnimationFrame(frame);
+    };
+    el._raf = requestAnimationFrame(frame);
+  }
+
+  /* ================= STATIC CONTENT ================= */
+  document.title = S.name;
+  const upper = S.name.toUpperCase();
+  $("heroName").textContent = upper; $("heroName").dataset.text = upper;
+  $("heroRole").textContent = S.role;
+  $("idName").textContent = S.name;
+  $("idLoc").textContent = S.location;
+  $("idStand").textContent = S.stand.name;
+  $("standName").textContent = S.stand.name;
+  $("standAbility").textContent = S.stand.ability;
+  $("about").textContent = S.about;
+  $("year").textContent = new Date().getFullYear();
+
+  const pipsHTML = (v) => Array.from({ length: 5 }, (_, i) => `<i class="${i < v ? "on" : ""}"></i>`).join("");
+  $$(".pips[data-v]").forEach((el) => (el.innerHTML = pipsHTML(+el.dataset.v)));
+
+  const lines = [
+    "> Is that a JoJo reference? …affirmative.",
+    "> Training models with the power of hamon.",
+    "> Location: " + S.location + " // status: ONLINE",
+    "> Press Z to stop time.",
+  ];
+  let li = 0, ci = 0, del = false;
+  (function type() {
+    const line = lines[li];
+    $("typed").textContent = line.slice(0, ci);
+    if (!del && ci < line.length) ci++;
+    else if (!del) { del = true; return setTimeout(type, 1800); }
+    else if (ci > 0) ci--;
+    else { del = false; li = (li + 1) % lines.length; }
+    setTimeout(type, del ? 22 : 50);
+  })();
+
+  /* ---- stand ---- */
+  const gradeVal = { A: 5, B: 4, C: 3, D: 2, E: 1 };
+  const n = S.stats.length, R = 100;
+  const pt = (i, r) => { const a = (Math.PI * 2 * i) / n - Math.PI / 2; return [Math.cos(a) * r, Math.sin(a) * r]; };
+  let svg = "";
+  for (let k = 1; k <= 5; k++) svg += `<polygon class="ring" points="${S.stats.map((_, i) => pt(i, (R * k) / 5).join(",")).join(" ")}"/>`;
+  S.stats.forEach((s, i) => {
+    const [x, y] = pt(i, R), [lx, ly] = pt(i, R + 30);
+    svg += `<line class="spoke" x1="0" y1="0" x2="${x}" y2="${y}"/>`;
+    svg += `<text class="grade" x="${lx}" y="${ly}">${esc(s.grade)}</text><text class="axis-label" x="${lx}" y="${ly + 16}">${esc(s.label.toUpperCase())}</text>`;
+  });
+  const shapePts = S.stats.map((s, i) => pt(i, (R * (gradeVal[s.grade] || 1)) / 5));
+  svg += `<g class="shape-g"><polygon class="shape" points="${shapePts.map((p) => p.join(",")).join(" ")}"/></g>`;
+  $("radar").innerHTML = svg;
+  $("attrs").innerHTML = S.stats.map((s) => `<li><span>${esc(s.label.toUpperCase())}</span><span class="pips">${pipsHTML(gradeVal[s.grade] || 1)}</span><span class="g">${esc(s.grade)}</span></li>`).join("");
+  $("skills").innerHTML = S.skills.map((s) => `<span class="chip">${esc(s)}</span>`).join("");
+  $("skillCount").textContent = `${S.skills.length} ACTIVE`;
+
+  /* ---- archive ---- */
+  $("paperList").innerHTML = S.papers.map((p, i) => `<li class="db-item new" data-i="${i}"><small>ENTRY ${String(i + 1).padStart(2, "0")} · ${esc(p.tag)}</small><span>${esc(p.title)}</span></li>`).join("");
+  function showPaper(i) {
+    const p = S.papers[i];
+    $$(".db-item").forEach((el, k) => { el.classList.toggle("active", k === i); if (k === i) el.classList.remove("new"); });
+    $("paperDetail").innerHTML = `
+      <div class="panel-head"><span>ENTRY ${String(i + 1).padStart(2, "0")} // DECRYPTED</span><span class="code">${esc(p.year)}</span></div>
+      <span class="tag">${esc(p.tag)}</span>
+      <h3 id="pTitle"></h3>
+      <dl class="kv"><dt>AUTHORS</dt><dd>${esc(p.authors)}</dd><dt>VENUE</dt><dd>${esc(p.venue)}</dd><dt>YEAR</dt><dd>${esc(p.year)}</dd></dl>
+      <p class="blurb">${esc(p.blurb)}</p>
+      <a class="hbtn" href="${esc(p.url)}" target="_blank" rel="noopener"><span>ORA ORA → ACCESS FILE</span><em>↗</em></a>`;
+    scramble($("pTitle"), p.title, 700);
+  }
+  $$(".db-item").forEach((el) => el.addEventListener("click", () => { sfx("click"); showPaper(+el.dataset.i); }));
+  if (S.papers.length) showPaper(0);
+
+  /* ---- comms ---- */
+  const L = S.links;
+  $("contactLinks").innerHTML = [
+    L.github && ["GH", "REPOSITORY", "GITHUB", L.github],
+    L.linkedin && ["IN", "PROFESSIONAL NET", "LINKEDIN", L.linkedin],
+    L.email && ["@", "DIRECT MESSAGE", "EMAIL", "mailto:" + L.email],
+  ].filter(Boolean).map(([ic, sub, label, href]) =>
+    `<a class="contact" href="${esc(href)}" ${href.startsWith("mailto") ? "" : 'target="_blank" rel="noopener"'}><span class="ic">${ic}</span><span><small>${sub}</small><b>${label}</b></span></a>`).join("");
+
+  /* ================= VIEWS / TABS ================= */
+  const VIEWS = ["profile", "stand", "archive", "audio", "comms"];
+  const seen = new Set();
+  const firstVisit = {
+    stand: ["STAND ANALYSIS COMPLETE", `${S.stats.length} parameters scanned`],
+    archive: ["DATA FRAGMENTS ACQUIRED", `${S.papers.length} research entries decrypted`],
+    audio: ["AUDIO SUBSYSTEM ONLINE", `${S.tracks.length} tracks loaded`],
+    comms: ["UPLINK ESTABLISHED", "secure channels open"],
+  };
+  $$(".tab").forEach((t, i) => (t.dataset.n = i + 1));
+  let current = null;
+  function setView(name, sound = true) {
+    if (!VIEWS.includes(name)) name = "profile";
+    if (name === current) return;
+    current = name;
+    const vp = $("viewport");
+    vp.classList.remove("glitching"); void vp.offsetWidth; vp.classList.add("glitching");
+    if (sound) sfx("tab");
+    $$(".tab").forEach((t) => t.classList.toggle("active", t.dataset.view === name));
+    $$(".view").forEach((v) => {
+      const on = v.dataset.view === name;
+      v.classList.toggle("active", on);
+      if (on) [...v.children].forEach((c, i) => c.style.setProperty("--i", i));
+    });
+    vp.scrollTop = 0;
+    $$(`.view[data-view="${name}"] .scr`).forEach((el) => scramble(el));
+    if (name === "profile") scramble($("heroName"), upper, 900);
+    try { history.replaceState(null, "", "#" + name); } catch {}
+    const at = $$(".tab.active")[0], tb = $("tabs"); if (at) tb.scrollLeft = at.offsetLeft - (tb.clientWidth - at.offsetWidth) / 2;
+    if (bootDone && !seen.has(name)) { seen.add(name); if (firstVisit[name]) setTimeout(() => toast(...firstVisit[name]), 350); }
+  }
+  const step = (d) => setView(VIEWS[(VIEWS.indexOf(current) + d + VIEWS.length) % VIEWS.length]);
+  $$(".tab").forEach((t) => t.addEventListener("click", () => setView(t.dataset.view)));
+  $$("[data-goto]").forEach((b) => b.addEventListener("click", () => setView(b.dataset.goto)));
+  $$(".key")[0].addEventListener("click", () => step(-1));
+  $$(".key")[1].addEventListener("click", () => step(1));
+  addEventListener("hashchange", () => setView(location.hash.slice(1)));
+
+  /* ================= HUD CHROME ================= */
+  const pad = (x) => String(x).padStart(2, "0");
+  setInterval(() => { const d = new Date(); $("clock").textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }, 1000);
+  setInterval(() => ($("syncMeter").style.width = 55 + Math.random() * 45 + "%"), 1400);
+  $("ticker").textContent = [
+    `SUBJECT ${upper} ONLINE`, `STAND ${S.stand.name} CALIBRATED`, "MENACING AURA LEVEL: ゴゴゴゴ",
+    "WEATHER: NEON RAIN, 12°C", "REMINDER: HYDRATE BETWEEN TRAINING RUNS", "PRESS Z TO STOP TIME",
+    `${S.papers.length} RESEARCH ENTRIES IN ARCHIVE`, "ALL SYSTEMS NOMINAL",
+  ].join("   ///   ");
+
+  // reticle cursor
+  if (fine) {
+    const r = $("reticle");
+    let tx = innerWidth / 2, ty = innerHeight / 2, x = tx, y = ty;
+    addEventListener("mousemove", (e) => { tx = e.clientX; ty = e.clientY; });
+    addEventListener("mousedown", () => r.classList.add("down"));
+    addEventListener("mouseup", () => r.classList.remove("down"));
+    (function loop() { x += (tx - x) * 0.35; y += (ty - y) * 0.35; r.style.transform = ""; r.style.left = x + "px"; r.style.top = y + "px"; requestAnimationFrame(loop); })();
+  }
+  // hover sounds + reticle hot state
+  const HOT = "button, a, .db-item, .tracklist li, .chip, .attrs li, input, .key";
+  let lastHot = null;
+  document.addEventListener("mouseover", (e) => {
+    const h = e.target.closest(HOT);
+    $("reticle").classList.toggle("hot", !!h);
+    if (h && h !== lastHot) sfx("hover");
+    lastHot = h;
+  });
+  document.addEventListener("click", (e) => { if (e.target.closest("button, a")) sfx("click"); });
+
+  $("sfxBtn").onclick = () => toggleSfx();
+  function toggleSfx() { sfxOn = !sfxOn; $("sfxBtn").textContent = sfxOn ? "SFX:ON" : "SFX:OFF"; $("sfxBtn").classList.toggle("off", !sfxOn); }
+
+  /* ================= MUSIC PLAYER ================= */
+  const tracks = S.tracks;
+  let audioEl, cur = -1, playing = false, timer = null, stepN = 0, nextTime = 0, song = null;
+  const BARS = 32;
+  const hash = (s) => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
+  const rng = (seed) => () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
+  const scale = [0, 2, 3, 5, 7, 8, 10];
+  const chord = (deg) => [0, 2, 4, 6].map((k) => scale[(deg + k) % 7] + 12 * Math.floor((deg + k) / 7));
+
+  function makeSong(t) {
+    const r = rng(hash(t.title + "|" + t.artist));
+    const progs = [[0, 5, 2, 6], [0, 3, 5, 4], [5, 6, 0, 0], [0, 6, 5, 6], [0, 5, 3, 4], [3, 4, 0, 5]];
+    const arps = [[0, 1, 2, 1], [0, 1, 2, 3], [2, 1, 0, 1], [0, 2, 1, 3], [0, 0, 2, 1]];
+    return {
+      root: 40 + Math.floor(r() * 10), bpm: 92 + Math.floor(r() * 36),
+      prog: progs[Math.floor(r() * progs.length)], arp: arps[Math.floor(r() * arps.length)],
+      wave: r() < 0.5 ? "square" : "sawtooth", swingHat: r() < 0.5, cutoff: 1400 + r() * 2200,
+    };
+  }
+  function env(g, t, a, peak, dec) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + dec); }
+  function tone(freq, t, dur, type, vol, cutoff) {
+    const o = ctx.createOscillator(), g = ctx.createGain(), f = ctx.createBiquadFilter();
+    o.type = type; o.frequency.value = freq; f.type = "lowpass"; f.frequency.value = cutoff || 3000;
+    o.connect(f); f.connect(g); g.connect(master); env(g, t, 0.005, vol, dur); o.start(t); o.stop(t + dur + 0.05);
+  }
+  function kick(t) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.15);
+    o.connect(g); g.connect(master); env(g, t, 0.002, 0.9, 0.22); o.start(t); o.stop(t + 0.3);
+  }
+  function noise(t, dur, vol, freq, type) {
+    const s = ctx.createBufferSource(), g = ctx.createGain(), f = ctx.createBiquadFilter();
+    s.buffer = noiseBuf; f.type = type; f.frequency.value = freq;
+    s.connect(f); f.connect(g); g.connect(master); env(g, t, 0.002, vol, dur); s.start(t); s.stop(t + dur + 0.05);
+  }
+  function padChord(notes, t, dur) {
+    notes.slice(0, 3).forEach((m) => [-6, 6].forEach((det) => {
+      const o = ctx.createOscillator(), g = ctx.createGain(), f = ctx.createBiquadFilter();
+      o.type = "sawtooth"; o.frequency.value = mtof(m); o.detune.value = det; f.type = "lowpass"; f.frequency.value = 900;
+      o.connect(f); f.connect(g); g.connect(master);
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.035, t + dur * 0.4); g.gain.linearRampToValueAtTime(0.0001, t + dur);
+      o.start(t); o.stop(t + dur + 0.05);
+    }));
+  }
+  function scheduleStep(s, t) {
+    const sp = 60 / song.bpm / 4, bar = Math.floor(s / 16), pos = s % 16;
+    const c = chord(song.prog[bar % song.prog.length]).map((x) => x + song.root);
+    if (pos === 0) padChord(c, t, sp * 16);
+    if (bar >= 2) {
+      if (pos % 4 === 0) kick(t);
+      if (pos === 4 || pos === 12) noise(t, 0.18, 0.35, 1800, "bandpass");
+      if (pos % 2 === 1 || (song.swingHat && pos % 4 === 3)) noise(t, 0.04, 0.12, 8000, "highpass");
+    }
+    if (pos % 2 === 0) tone(mtof(c[0] - 12 + (pos % 4 === 2 ? 12 : 0)), t, sp * 1.6, "sawtooth", 0.16, 600);
+    if (bar < BARS - 1) tone(mtof(c[song.arp[pos % song.arp.length]] + 24), t, sp * 0.9, song.wave, 0.06, song.cutoff);
+  }
+  function scheduler() {
+    const sp = 60 / song.bpm / 4;
+    while (nextTime < ctx.currentTime + 0.12) {
+      if (stepN >= BARS * 16) return next();
+      scheduleStep(stepN, nextTime); nextTime += sp; stepN++;
+    }
+    $("progBar").style.width = (100 * stepN) / (BARS * 16) + "%";
+  }
+  function stopAll() { clearInterval(timer); timer = null; if (audioEl) audioEl.pause(); }
+  function load(i) {
+    stopAll();
+    cur = (i + tracks.length) % tracks.length;
+    const t = tracks[cur];
+    scramble($("npTitle"), t.title, 500);
+    $("npArtist").textContent = t.artist;
+    $$("#trackList li").forEach((li, k) => li.classList.toggle("active", k === cur));
+    $("progBar").style.width = "0%";
+    if (t.src) {
+      if (!audioEl) {
+        audioEl = new Audio(); audioEl.crossOrigin = "anonymous";
+        ctx.createMediaElementSource(audioEl).connect(master);
+        audioEl.addEventListener("ended", next);
+        audioEl.addEventListener("timeupdate", () => audioEl.duration && ($("progBar").style.width = (100 * audioEl.currentTime) / audioEl.duration + "%"));
+      }
+      audioEl.src = t.src; $("bpm").textContent = "FILE";
+    } else {
+      song = makeSong(t); stepN = 0; nextTime = ctx.currentTime + 0.08;
+      $("bpm").textContent = song.bpm + " BPM";
+    }
+  }
+  function play() {
+    initAudio();
+    if (cur < 0) load(0);
+    if (tracks[cur].src) audioEl.play();
+    else { nextTime = Math.max(nextTime, ctx.currentTime + 0.05); clearInterval(timer); timer = setInterval(scheduler, 25); }
+    playing = true; ui();
+  }
+  function pause() { stopAll(); playing = false; ui(); }
+  function next() { load(cur + 1); if (playing) play(); toastTrack(); }
+  function prev() { load(cur - 1); if (playing) play(); toastTrack(); }
+  function toastTrack() { if (playing && current !== "audio") toast("NOW PLAYING", `${tracks[cur].title} — ${tracks[cur].artist}`); }
+  function ui() {
+    $("playBtn").textContent = playing ? "⏸" : "▶";
+    $("playBtn").setAttribute("aria-label", playing ? "Pause" : "Play");
+    $("disc").classList.toggle("playing", playing);
+  }
+  $("trackCount").textContent = `${tracks.length} TRACKS`;
+  $("trackList").innerHTML = tracks.map((t) => `<li><div><span class="t">${esc(t.title)}</span><span class="a">${esc(t.artist)}</span></div></li>`).join("");
+  $$("#trackList li").forEach((li, k) => li.addEventListener("click", () => { initAudio(); load(k); play(); }));
+  $("playBtn").onclick = () => (playing ? pause() : play());
+  $("nextBtn").onclick = () => { initAudio(); next(); };
+  $("prevBtn").onclick = () => { initAudio(); prev(); };
+  $("vol").oninput = (e) => master && (master.gain.value = +e.target.value);
+
+  const cv = $("viz"), g2 = cv.getContext("2d");
+  function drawViz() {
+    requestAnimationFrame(drawViz);
+    if (document.body.classList.contains("time-stopped")) return;
+    const w = cv.width, h = cv.height, data = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(data);
+    g2.clearRect(0, 0, w, h);
+    const bars = 60, bw = w / bars, seg = 6;
+    for (let i = 0; i < bars; i++) {
+      const v = data[Math.floor((i / bars) * data.length * 0.8)] / 255;
+      const segs = Math.round((v * h) / seg);
+      for (let s = 0; s < Math.max(1, segs); s++) {
+        g2.fillStyle = s > (h / seg) * 0.75 ? "#f5e130" : s > (h / seg) * 0.45 ? "#ff4d57" : "#4ef2ff";
+        g2.globalAlpha = segs ? 1 : 0.3;
+        g2.fillRect(i * bw + 1, h - (s + 1) * seg + 1, bw - 3, seg - 2);
+      }
+    }
+    g2.globalAlpha = 1;
+  }
+  g2.fillStyle = "rgba(78,242,255,.3)";
+  for (let i = 0; i < 60; i++) g2.fillRect(i * 12 + 1, 145, 9, 4);
+
+  /* ================= ZA WARUDO ================= */
+  let stopping = false;
+  function zaWarudo() {
+    if (stopping) return;
+    initAudio();
+    sfx("boot");
+    stopping = true;
+    setTimeout(() => {
+      document.body.classList.add("time-stopped");
+      if (ctx) ctx.suspend();
+    }, 250);
+    let n = 5; $("tsCount").textContent = n;
+    const iv = setInterval(() => {
+      n--; $("tsCount").textContent = n;
+      if (n <= 0) {
+        clearInterval(iv);
+        document.body.classList.remove("time-stopped");
+        if (ctx) ctx.resume();
+        stopping = false;
+        toast("TIME RESUMES", "Toki wa ugoki dasu…");
+      }
+    }, 1000);
+  }
+  $("zaWarudo").onclick = zaWarudo;
+
+  /* ================= KEYBOARD ================= */
+  addEventListener("keydown", (e) => {
+    if (!$("boot").classList.contains("gone")) { if (e.key === "Escape" || e.key === "Enter") finishBoot(); return; }
+    if (e.target.matches("input, textarea") || e.metaKey || e.ctrlKey || e.altKey) return;
+    const k = e.key.toLowerCase();
+    if (k === "q") step(-1);
+    else if (k === "e") step(1);
+    else if (k >= "1" && k <= "5") setView(VIEWS[+k - 1]);
+    else if (k === "z") zaWarudo();
+    else if (k === "m") toggleSfx();
+    else if (k === " " && current === "audio") { e.preventDefault(); playing ? pause() : play(); }
+  });
+
+  /* ================= BOOT SEQUENCE ================= */
+  const quick = store.get("booted") === "1";
+  const BOOT = [
+    ["k", "[ OK ]", " Mounting neural interface"],
+    ["k", "[ OK ]", " Handshake with subject: " + upper],
+    ["k", "[ OK ]", " Loading stand.dll — " + S.stand.name],
+    ["k", "[ OK ]", " Calibrating hamon resonance … 98.6%"],
+    ["w", "[WARN]", " Menacing aura detected (ゴゴゴゴ)"],
+    ["k", "[ OK ]", ` Decrypting research archive (${S.papers.length} entries)`],
+    ["k", "[ OK ]", ` Audio subsystem: synthwave × ${S.tracks.length}`],
+    ["k", "[ OK ]", " All systems nominal. Ready."],
+  ];
+  let bootDone = false;
+  function bootRun() {
+    const log = $("bootLog"), per = quick ? 60 : 260;
+    BOOT.forEach(([cls, tag, txt], i) => setTimeout(() => {
+      if (bootDone) return;
+      log.innerHTML += `<span class="${cls}">${tag}</span>${esc(txt)}\n`;
+      const pct = Math.round(((i + 1) / BOOT.length) * 100);
+      $("bootBar").style.width = pct + "%"; $("bootPct").textContent = pct + "%";
+      sfx("tick");
+      if (i === BOOT.length - 1) { $("jackIn").disabled = false; $("jackIn").focus({ preventScroll: true }); }
+    }, 200 + i * per));
+  }
+  function finishBoot() {
+    if (bootDone) return;
+    bootDone = true;
+    initAudio(); sfx("boot");
+    store.set("booted", "1");
+    $("boot").classList.add("gone");
+    current = null; setView(location.hash.slice(1) || "profile", false);
+    setTimeout(() => toast("CONNECTION ESTABLISHED", `Welcome to ${S.name}'s system.`), 600);
+  }
+  $("jackIn").onclick = finishBoot;
+  $("skipBoot").onclick = finishBoot;
+  setView(location.hash.slice(1) || "profile", false);
+  bootRun();
+})();

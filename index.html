@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Joshua Janssen</title>
+  <meta name="description" content="Personal site of Joshua Janssen: skills, papers and a soundtrack." />
+  <meta name="theme-color" content="#08080d" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,4 94,28 94,72 50,96 6,72 6,28' fill='%2308080d' stroke='%23ff4d57' stroke-width='8'/><text x='50' y='64' font-size='40' text-anchor='middle' fill='%234ef2ff' font-family='monospace'>JJ</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ============ BOOT SEQUENCE ============ -->
+  <div id="boot" class="boot">
+    <div class="boot-inner">
+      <div class="boot-logo"><span>JJ</span>//OS <small>v8.11 · NEURAL SHELL</small></div>
+      <pre id="bootLog" class="boot-log"></pre>
+      <div class="boot-bar"><div id="bootBar"></div></div>
+      <div class="boot-meta"><span id="bootPct">0%</span><span>SECURE LINK // ENCRYPTED</span></div>
+      <button id="jackIn" class="jack-in" disabled><span>JACK IN</span></button>
+      <button id="skipBoot" class="skip">[ESC] skip</button>
+    </div>
+  </div>
+
+  <!-- ============ HUD ============ -->
+  <div class="hud" id="hud">
+    <header class="topbar">
+      <div class="brand"><span class="hex"></span><b>JJ</b>//OS</div>
+      <div class="readouts">
+        <div class="ro"><small>LOCAL TIME</small><span id="clock">--:--:--</span></div>
+        <div class="ro hide-s"><small>LOC</small><span>51.56N 05.09E</span></div>
+        <div class="ro hide-s"><small>SYNC</small><span class="meter"><i id="syncMeter"></i></span></div>
+        <div class="ro hide-s"><small>SIGNAL</small><span class="signal"><i></i><i></i><i></i><i></i><i></i></span></div>
+      </div>
+      <div class="top-actions">
+        <button id="sfxBtn" class="mini" title="Interface sounds (M)">SFX:ON</button>
+        <button id="zaWarudo" class="za-btn" title="Stop time (Z)">⏱ ZA WARUDO</button>
+      </div>
+    </header>
+
+    <nav class="tabs" id="tabs" aria-label="Sections">
+      <span class="key">Q</span>
+      <button data-view="profile" class="tab">PROFILE</button>
+      <button data-view="stand" class="tab">STAND</button>
+      <button data-view="archive" class="tab">ARCHIVE</button>
+      <button data-view="audio" class="tab">AUDIO</button>
+      <button data-view="comms" class="tab">COMMS</button>
+      <span class="key">E</span>
+    </nav>
+
+    <main class="viewport" id="viewport">
+
+      <!-- PROFILE -->
+      <section class="view" data-view="profile" aria-label="Profile">
+        <div class="profile">
+          <div class="profile-main">
+            <p class="eyebrow"><span class="blink">■</span> STAND USER DETECTED</p>
+            <h1 class="name glitch" id="heroName" data-text="">JOSHUA JANSSEN</h1>
+            <p class="role" id="heroRole"></p>
+            <p class="typed"><span id="typed"></span><span class="caret">_</span></p>
+            <div class="cta">
+              <button class="hbtn" data-goto="archive"><span>OPEN ARCHIVE</span><em>2</em></button>
+              <button class="hbtn alt" data-goto="audio"><span>▶ AUDIO</span><em>4</em></button>
+            </div>
+          </div>
+          <div class="panel idcard">
+            <div class="panel-head"><span>ID // SUBJECT FILE</span><span class="code">#JJ-1138</span></div>
+            <div class="id-body">
+              <svg class="avatar" viewBox="0 0 120 120" aria-hidden="true">
+                <polygon points="60,4 112,32 112,88 60,116 8,88 8,32" class="av-hex" />
+                <polygon points="60,18 98,40 98,80 60,102 22,80 22,40" class="av-hex2" />
+                <text x="60" y="72" class="av-txt">JJ</text>
+                <rect x="8" y="0" width="104" height="3" class="av-scan" />
+              </svg>
+              <dl class="fields">
+                <dt>HANDLE</dt><dd id="idName"></dd>
+                <dt>ORIGIN</dt><dd id="idLoc"></dd>
+                <dt>STAND</dt><dd id="idStand"></dd>
+                <dt>STATUS</dt><dd class="ok">● ONLINE</dd>
+                <dt>BIZARRE LVL</dt><dd><span class="pips" data-v="5"></span></dd>
+              </dl>
+            </div>
+            <p class="about" id="about"></p>
+          </div>
+        </div>
+        <div class="menacing" aria-hidden="true"><span>ゴ</span><span>ゴ</span><span>ゴ</span><span>ゴ</span><span>ゴ</span><span>ゴ</span></div>
+      </section>
+
+      <!-- STAND -->
+      <section class="view" data-view="stand" aria-label="Stand stats">
+        <h2 class="vtitle"><span class="scr">STAND PARAMETERS</span><small>スタンド能力</small></h2>
+        <div class="stand-grid">
+          <div class="panel">
+            <div class="panel-head"><span>STAND // <b id="standName"></b></span><span class="code">ANALYSIS</span></div>
+            <svg id="radar" viewBox="-165 -150 330 300" role="img" aria-label="Skill radar chart"></svg>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><span>ATTRIBUTES</span><span class="code">A–E</span></div>
+            <ul class="attrs" id="attrs"></ul>
+            <p class="ability"><b>ABILITY:</b> <span id="standAbility"></span></p>
+          </div>
+        </div>
+        <div class="panel perks-panel">
+          <div class="panel-head"><span>INSTALLED MODULES</span><span class="code" id="skillCount"></span></div>
+          <div class="chips" id="skills"></div>
+        </div>
+      </section>
+
+      <!-- ARCHIVE -->
+      <section class="view" data-view="archive" aria-label="Papers">
+        <h2 class="vtitle"><span class="scr">RESEARCH ARCHIVE</span><small>論文データベース</small></h2>
+        <div class="db">
+          <ul class="db-list" id="paperList"></ul>
+          <article class="panel db-detail" id="paperDetail"></article>
+        </div>
+      </section>
+
+      <!-- AUDIO -->
+      <section class="view" data-view="audio" aria-label="Music player">
+        <h2 class="vtitle"><span class="scr">SOUND STAND</span><small>音楽</small></h2>
+        <div class="player">
+          <div class="panel deck">
+            <div class="panel-head"><span>NOW PLAYING</span><span class="code" id="bpm">-- BPM</span></div>
+            <div class="np">
+              <div class="disc" id="disc"><i></i></div>
+              <div class="np-text">
+                <p class="np-title" id="npTitle">NO SIGNAL</p>
+                <p class="np-artist" id="npArtist">select a track</p>
+              </div>
+            </div>
+            <canvas id="viz" width="720" height="150" aria-hidden="true"></canvas>
+            <div class="progress"><div id="progBar"></div></div>
+            <div class="controls">
+              <button id="prevBtn" class="cbtn" aria-label="Previous">⏮</button>
+              <button id="playBtn" class="cbtn play" aria-label="Play">▶</button>
+              <button id="nextBtn" class="cbtn" aria-label="Next">⏭</button>
+              <label class="vol">VOL <input id="vol" type="range" min="0" max="1" step="0.01" value="0.6" /></label>
+            </div>
+            <p class="hint" id="modeHint">[SPACE] play/pause · each track plays a generated synthwave loop</p>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><span>PLAYLIST</span><span class="code" id="trackCount"></span></div>
+            <ol class="tracklist" id="trackList"></ol>
+          </div>
+        </div>
+      </section>
+
+      <!-- COMMS -->
+      <section class="view" data-view="comms" aria-label="Contact">
+        <h2 class="vtitle"><span class="scr">COMMS</span><small>連絡</small></h2>
+        <div class="comms" id="contactLinks"></div>
+        <p class="yare">“Yare yare daze… you made it to the end.”</p>
+        <div class="tbc"><span>To Be Continued</span><b>⟸</b></div>
+        <p class="copy">© <span id="year"></span> Joshua Janssen · built with neon &amp; hamon</p>
+      </section>
+    </main>
+
+    <footer class="statusbar">
+      <div class="ticker"><div id="ticker"></div></div>
+      <div class="keys hide-s"><span><b>Q</b><b>E</b> switch</span><span><b>1-5</b> jump</span><span><b>Z</b> stop time</span><span><b>M</b> sfx</span></div>
+    </footer>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <div id="reticle" class="reticle" aria-hidden="true"><i></i></div>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+  <div id="timeStop" class="time-stop" aria-hidden="true">
+    <div class="ts-text">時は止まった<small>TIME HAS STOPPED</small><b id="tsCount">5</b></div>
+  </div>
+
+  <script src="content.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
