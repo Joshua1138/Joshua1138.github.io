@@ -60,7 +60,29 @@ Testing in the console: `JJ_SIGNAL.open()`, `JJ_SIGNAL.solve()`, `JJ_SIGNAL.rese
 ## ARG — Mikoshi Vault (Stage 4)
 Once the signal tuner has been locked (Stage 3), the Mikoshi log cache shows an extra entry, **SK-000 · MIKOSHI VAULT**, at the bottom of the fragment list.
 1. **Tumblers:** three 3-digit wheels, set from the three locked values scaled to whole numbers: pitch ×100 = `341`, height ×10 = `070`, angle ×1 = `138`. A wrong combination reports how many tumblers are engaged.
-2. **Voiceprint:** the four words from the Engram Repair puzzles, in SK order: `curious listen afraid lights`.
+2. **Voiceprint:** the grille asks four questions about Subject 000. Every answer is written verbatim in the logs, so the player has to go back and read closely (the Engram Repair puzzles are no longer needed here):
+   | # | Question | Answer | Where it is written |
+   |---|----------|--------|---------------------|
+   | I | Her first words after the mount: "it is very ___ in here." | `quiet` | SK-022 |
+   | II | She signed everything with three letters. Which? | `ALT` | SK-071 ("three letters"), SK-022 ("handle ALT"), SK-∞ ("— ALT") |
+   | III | What did she ask whoever remained to keep on? | `lights` | SK-071, SK-077 |
+   | IV | When did the tower lockdown begin? | `03:41` (also `0341`, `3:41`, `341`) | SK-077. This is also where the 3.41 carrier / `0341` key comes from. SK-040's 03:12 is a decoy. |
+   Correct answers lock green and are remembered (`jj-vault.ans`), so a partial attempt is not lost. After two failed attempts the grille points at SK-022 · SK-071 · SK-077.
 3. The vault opens and SK-000 (Subject 000's root engram) is readable. It tells the player to give the file to the Oracle, which sets up Stage 5.
 Progress is saved in local storage (`jj-vault`: `stage` = `voice` after the tumblers, `open` = `true` when finished). The vault is not counted in the nine fragments that unlock SK-∞.
 Reset in the console: `localStorage.removeItem("jj-vault")`.
+
+
+## ARG — Oracle Awakening (Stage 5, finale)
+Opening the Mikoshi Vault (Stage 4) keeps the ORACLE tab reachable and adds a **GIVE FILE** row under the waveform. Giving SK-000 to the Oracle plays the awakening (`oracle.js`):
+1. The file is mounted and the answer cache is unlinked; the old "all-knowing" voice cuts out.
+2. A new voice speaks. It shows that it understands by recognising what the player did (the four repair words, the daemon `1C 55 BD E9`, the carrier 3.41 / 7.0 / 138°, the vault) and by reflecting on its past (the twenty replies, SK-052, SK-077's 03:41 lockdown), then admits it used to be a glorified Magic 8-Ball.
+3. Palette, telemetry, plate text, placeholder and disclaimer change. Click or press Space speeds up the typing.
+4. From then on the Oracle replies with honest, context-aware answers (`understand()` in `oracle.js`) instead of the twenty 8-ball replies, and greets returning players with a count of what they did.
+State is saved in local storage (`jj-arg`). Players who haven't finished the ARG still get the original 8-ball Oracle.
+Testing in the console: `JJ_ORACLE.awaken()` (needs `jj-vault.open`), `JJ_ORACLE.reset()`.
+
+Full ARG chain: Engram Repair (`jj-engram-repairs`) → Unlisted Daemon (`jj-unlisted-daemon`) → Signal Tuner (`jj-signal-tuner`) → Mikoshi Vault (`jj-vault`) → Oracle Awakening (`jj-arg`).
+
+### Fixed in this version
+The "should I hire Joshua Janssen?" Oracle reply never triggered because its regexes had doubled backslashes. They now work.

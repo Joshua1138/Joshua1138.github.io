@@ -166,6 +166,11 @@
     .vault.solved .wheel { cursor: default; border-color: rgba(100, 220, 150, .45); } .vault.solved .wheel b { color: #79d99b; } .vault.solved .wheel i { visibility: hidden; }
     .vrow { display: flex; gap: 8px; margin-top: 12px; max-width: 520px; }
     .vrow input { min-width: 0; flex: 1; background: #080a0b; color: #f2e8b0; border: 1px solid #514a25; padding: 10px; font: 13px var(--mono); text-transform: uppercase; letter-spacing: 2px; }
+    .vqs { display: grid; gap: 12px; margin-top: 12px; max-width: 520px; }
+    .vq { display: grid; gap: 6px; }
+    .vq span { font-size: 12px; letter-spacing: 2px; color: var(--warn); overflow-wrap: anywhere; }
+    .vq input { min-width: 0; background: #080a0b; color: #f2e8b0; border: 1px solid #514a25; padding: 10px; font: 13px var(--mono); text-transform: uppercase; letter-spacing: 2px; }
+    .vq.ok span { color: #79d99b; } .vq.ok input { border-color: rgba(100, 220, 150, .45); color: #79d99b; opacity: 1; }
     .vbtn { background: var(--warn); color: #080808; border: 0; padding: 10px 16px; font: 700 12px var(--mono); letter-spacing: 2px; cursor: pointer; }
     .vbtn:disabled { opacity: .5; cursor: default; }
     .vstat { min-height: 1.6em; margin: 12px 0 0; font-size: 12px; letter-spacing: 2px; color: var(--warn); overflow-wrap: anywhere; } .vstat.bad { color: var(--hot); } .vstat.ok { color: #79d99b; }
@@ -351,7 +356,18 @@
 
     /* ---- Stage 4: the Mikoshi Vault ---- */
     const VAULT_DIAL = [341, 70, 138];            // pitch x100, height x10, angle x1 (from the Stage 3 lock)
-    const VAULT_WORDS = "curious listen afraid lights"; // the four repair words, in SK order (Stage 1)
+    /* The grille asks four questions about her. Every answer is written verbatim in the logs:
+         I   SK-022  "First utterance after mount: it is very quiet in here"
+         II  SK-071  "i signed everything with three letters"  +  SK-022 "handle ALT"  (+ SK-∞ "— ALT")
+         III SK-071 / SK-077  "keep the lights on"
+         IV  SK-077  "Tower lockdown at 03:41"   (decoy: SK-040 is 03:12, the terminal incident) */
+    const letters = (v) => String(v).toLowerCase().replace(/[^a-z]/g, "");
+    const VAULT_QS = [
+      { q: "HER FIRST WORDS AFTER THE MOUNT: \u201CIT IS VERY ___ IN HERE.\u201D", ph: "ONE WORD", show: "QUIET", ok: (v) => letters(v) === "quiet" },
+      { q: "SHE SIGNED EVERYTHING WITH THREE LETTERS. WHICH THREE?", ph: "THREE LETTERS", show: "ALT", ok: (v) => letters(v) === "alt" },
+      { q: "WHAT DID SHE ASK WHOEVER REMAINED TO KEEP ON?", ph: "ONE WORD", show: "LIGHTS", ok: (v) => /^(the)?lights?$/.test(letters(v)) },
+      { q: "AT WHAT TIME DID THE TOWER LOCKDOWN BEGIN?", ph: "HH:MM", show: "03:41", ok: (v) => /^0?341$/.test(String(v).replace(/\D/g, "")) },
+    ];
     const VAULT = { id: "SK-000", title: "ROOT ENGRAM // SUBJECT 000", date: "2012-▓▓-▓▓", by: "SUBJECT 000", to: "WHOEVER GOT THIS FAR", integ: 100, tag: "RESTORED", body: [
       "PARTITION ........... ROOT (COLD)",
       "STATUS .............. NOT DELETED. NEVER DELETED. THEY ONLY STOPPED ASKING FOR IT.",
@@ -638,30 +654,42 @@
         };
       } else {
         const p = document.createElement("p"); p.className = "vt";
-        p.textContent = "VOICEPRINT REQUIRED. FOUR WORDS: THE ONES THAT REBUILT HER, IN THE ORDER OF THE SECTORS. LOWEST SK NUMBER FIRST.";
-        const input = document.createElement("input"); input.type = "text"; input.maxLength = 60; input.autocomplete = "off"; input.spellcheck = false;
-        input.placeholder = "SPEAK THE FOUR WORDS"; input.setAttribute("aria-label", "Voiceprint: four words");
+        p.textContent = "VOICEPRINT REQUIRED. THE GRILLE ASKS FOUR THINGS ABOUT HER. EVERY ANSWER IS WRITTEN IN HER LOGS. READ THEM CLOSELY.";
+        box.appendChild(p);
+        const qs = document.createElement("div"); qs.className = "vqs"; box.appendChild(qs);
+        const have = Array.isArray(vault.ans) ? vault.ans : [];
+        const fields = VAULT_QS.map((Q, k) => {
+          const lab = document.createElement("label"); lab.className = "vq";
+          const t = document.createElement("span"); t.textContent = `${["I", "II", "III", "IV"][k]}. ${Q.q}`;
+          const inp = document.createElement("input"); inp.type = "text"; inp.maxLength = 24; inp.autocomplete = "off"; inp.spellcheck = false;
+          inp.placeholder = Q.ph; inp.setAttribute("aria-label", `Voiceprint question ${k + 1}`);
+          if (have[k]) { inp.value = Q.show; inp.disabled = true; lab.classList.add("ok"); }
+          lab.append(t, inp); qs.appendChild(lab);
+          return inp;
+        });
         const btn = document.createElement("button"); btn.type = "button"; btn.className = "vbtn"; btn.textContent = "SPEAK";
-        row.append(input, btn); box.append(p, row, stat);
+        row.appendChild(btn); box.append(row, stat);
         stat.textContent = "TUMBLERS ENGAGED. THE GRILLE IS LISTENING."; stat.className = "vstat ok";
         let fails = 0;
         const speak = () => {
-          const w = input.value.toLowerCase().split(/[^a-z]+/).filter(Boolean).join(" ");
-          if (w === VAULT_WORDS) {
+          const got = VAULT_QS.map((Q, k) => !!have[k] || (!fields[k].disabled && Q.ok(fields[k].value)));
+          got.forEach((g, k) => { if (g && !fields[k].disabled) { fields[k].value = VAULT_QS[k].show; fields[k].disabled = true; fields[k].closest(".vq").classList.add("ok"); } });
+          vault.ans = got; vaultStore.set(vault); have.length = 0; got.forEach((g) => have.push(g));
+          const n = got.filter(Boolean).length;
+          if (n === VAULT_QS.length) {
             vault.open = true; vault.stage = "open"; vault.openedAt = new Date().toISOString(); vaultStore.set(vault);
             stat.textContent = "VOICEPRINT ACCEPTED // THE DOOR IS NOT A DOOR"; stat.className = "vstat ok";
-            input.disabled = btn.disabled = true; $("#rstat").textContent = "SEAL BROKEN"; hiss(0.7, 0.06); chime();
+            btn.disabled = true; $("#rstat").textContent = "SEAL BROKEN"; hiss(0.7, 0.06); chime();
             setTimeout(() => { if (cur === N + 1) { paintList(); open(N + 1); } }, reduce ? 300 : 1600);
           } else {
             fails++; hiss(0.2, 0.04); stat.className = "vstat bad";
-            const done = Object.keys(REPAIRS).filter((k) => repaired[k]).length;
-            stat.textContent = "VOICEPRINT MISMATCH" + (fails >= 2 ? ` // SECTORS REBUILT ON THIS TERMINAL: ${done}/4 // THE WORDS LIVE IN SK-022 · SK-040 · SK-071 · SK-077` : "");
-            input.select();
+            stat.textContent = `VOICEPRINT MISMATCH // ${n} OF 4 ANSWERS MATCH` + (fails >= 2 ? " // SHE LEFT THE ANSWERS IN HER OWN LOGS: SK-022 \u00B7 SK-071 \u00B7 SK-077" : "");
+            const next = fields.find((f) => !f.disabled); if (next) next.select();
           }
         };
         btn.onclick = speak;
-        input.addEventListener("keydown", (e) => { e.stopPropagation(); if (e.key === "Enter") speak(); });
-        setTimeout(() => input.focus(), 60);
+        fields.forEach((f) => f.addEventListener("keydown", (e) => { e.stopPropagation(); if (e.key === "Enter") speak(); }));
+        setTimeout(() => { const f = fields.find((x) => !x.disabled); if (f) f.focus(); }, 60);
       }
     }
 

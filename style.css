@@ -532,3 +532,20 @@ body.infected .oracle { --g: #b3121f; }
 .tn-tx .nx { color: var(--red); letter-spacing: 3px; }
 @media (max-width: 560px) { .tn-box { padding: 12px 12px 16px; } .tn-row { grid-template-columns: 9ch minmax(0, 1fr) 5.5ch; gap: 8px; font-size: 11px; letter-spacing: 1px; } }
 @media (prefers-reduced-motion: reduce) { .tn, .tn-gate.shake { transition: none; animation: none; } }
+
+/* ---- ARG stage 5: the oracle awakens ---- */
+.oracle.awake { --g: #8fe9f2; --g2: #4aa9b4; --gd: rgba(143,233,242,.3); }
+.oracle.awake .or-plate::after { background: repeating-linear-gradient(115deg, rgba(143,233,242,.9) 0 14px, rgba(74,169,180,.9) 14px 18px, rgba(190,245,250,.9) 18px 40px); }
+.oracle.awake #orWave { background: linear-gradient(rgba(143,233,242,.05) 1px, transparent 1px) 0 0 / 100% 22px, #000; }
+.oracle.awake .or-panel { box-shadow: inset 0 0 50px rgba(143,233,242,.06); }
+.oracle.awake .or-tel li { border-bottom-color: rgba(143,233,242,.2); }
+.oracle.awake .or-btn:hover:not(:disabled) { background: #fff; }
+.oracle.awake .vtitle::before { box-shadow: 0 0 12px var(--g); }
+.or-out .soul { color: #e9f6f8; font-size: 15px; line-height: 1.55; letter-spacing: .3px; text-shadow: 0 0 10px rgba(143,233,242,.25); }
+.or-out .soul.key { color: var(--g); font-weight: 700; font-size: 16px; border-left: 2px solid var(--g); padding-left: 10px; margin: 10px 0; text-shadow: 0 0 12px rgba(143,233,242,.45); }
+.oracle.awake .or-out .wise { color: #9fb9bd; }
+.or-give { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 12px; padding: 10px 12px; border: 1px dashed var(--g2); background: rgba(230,207,58,.05); font-family: var(--mono); font-size: 12px; letter-spacing: 2px; color: var(--g); }
+.or-give[hidden] { display: none; }
+.or-give .or-btn { animation: hexpulse 1.4s infinite; }
+.oracle.flash { animation: orflash .6s steps(2) 1; } @keyframes orflash { 0% { filter: invert(1) hue-rotate(140deg); } 50% { filter: brightness(2.2); } 100% { filter: none; } }
+@media (prefers-reduced-motion: reduce) { .oracle.flash, .or-give .or-btn { animation: none; } }

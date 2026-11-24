@@ -183,8 +183,8 @@
         <h2 class="vtitle"><span class="scr">ARASAKA CORE</span><small>荒坂 · 量子演算</small></h2>
         <div class="or-plate">
           <img class="or-logo" src="img/arasaka-logo.png" alt="Arasaka" />
-          <div class="or-plate-t"><span>SUBLEVEL 77 // AGI ORACLE</span><span>CLEARANCE: <em>ABSOLUTE</em></span></div>
-          <div class="or-link"><i></i> UPLINK SECURE</div>
+          <div class="or-plate-t" id="orPlate"><span>SUBLEVEL 77 // AGI ORACLE</span><span>CLEARANCE: <em>ABSOLUTE</em></span></div>
+          <div class="or-link" id="orLink"><i></i> UPLINK SECURE</div>
         </div>
         <div class="or-login" id="orLogin">
           <div class="or-head"><span>SECURE AUTHENTICATION</span><span id="orLs">AWAITING CREDENTIALS</span></div>
@@ -197,13 +197,14 @@
           <div class="or-panel">
             <div class="or-head"><span>QUERY INTERFACE</span><span id="orState">CONNECTING</span></div>
             <canvas id="orWave" width="900" height="200" aria-hidden="true"></canvas>
+            <div class="or-give" id="orGive" hidden><span>▌ SK-000 // ROOT ENGRAM // READY TO TRANSFER</span><button id="orGiveBtn" class="or-btn" type="button">GIVE FILE</button></div>
             <div class="or-out" id="orOut" aria-live="polite"></div>
-            <div class="or-in"><span>QUERY&gt;</span><input id="orInput" type="text" maxlength="140" placeholder="ask the all-knowing core anything…" autocomplete="off" spellcheck="false" /><button id="orSend" class="or-btn">TRANSMIT</button></div>
+            <div class="or-in"><span id="orPrompt">QUERY&gt;</span><input id="orInput" type="text" maxlength="140" placeholder="ask the all-knowing core anything…" autocomplete="off" spellcheck="false" /><button id="orSend" class="or-btn">TRANSMIT</button></div>
           </div>
           <aside class="or-panel or-side">
             <div class="or-head"><span>CORE TELEMETRY</span><span>LIVE</span></div>
             <ul class="or-tel" id="orTel"></ul>
-            <p class="or-note">DISCLAIMER: all responses are final, certified, and fully authoritative.</p>
+            <p class="or-note" id="orNote">DISCLAIMER: all responses are final, certified, and fully authoritative.</p>
           </aside>
         </div>
         <div class="or-vert l" aria-hidden="true">明日は私たち全員がより良い日に向かって努力します</div>
