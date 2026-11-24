@@ -83,6 +83,80 @@
     o.connect(gn); gn.connect(c.destination); o.start(s); o.stop(s + 0.08);
   }
 
+  /* ---- ARG layer: the core "bleeds" (private notes live outside the repo) ---- */
+  const ss = { get: (k) => { try { return sessionStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { sessionStorage.setItem(k, v); } catch {} }, del: (k) => { try { sessionStorage.removeItem(k); } catch {} } };
+  const BLEED = [
+    "> ░ cache bleed ░ unsigned ░ origin unknown",
+    "there is a room under this room.",
+    "she signed her warnings. the thing you are talking to learned to read from them.",
+  ];
+  const NAME_RE = /\balt\b|cunningham/i;
+  const WARM_RE = /soulkiller|mikoshi|engram|arasaka|blackwall|saburo|silverhand|johnny/i;
+  const H1 = "6d 69 6b 6f 73 68 69 2f", H2 = "6c 30 67 2d 30 30 37 37";
+  const GLY = "▓▒░█▌▐#@%&01/\\<>";
+  const scrollDown = () => (out.scrollTop = 1e9);
+
+  function hiss(dur = 0.3, v = 0.05) {
+    const c = J().ctx; if (!c || !J().sfxOn) return;
+    const n = c.createBuffer(1, Math.ceil(c.sampleRate * dur), c.sampleRate), d = n.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t = c.currentTime;
+    s.buffer = n; f.type = "bandpass"; f.frequency.value = 2600; f.Q.value = 2;
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(f); f.connect(g); g.connect(c.destination); s.start(t);
+  }
+  async function typeLeak(p, txt) { // like type(), but the signal wobbles and glyphs flicker in the cursor spot
+    for (let i = 1; i <= txt.length; i++) {
+      p.textContent = txt.slice(0, i) + (!reduce && i < txt.length && Math.random() < 0.12 ? GLY[(Math.random() * GLY.length) | 0] : "");
+      target = 0.15 + Math.random() * 0.55; if (i % 4 === 0) hiss(0.04, 0.02); scrollDown();
+      await wait(/[.,]/.test(txt[i - 1]) ? 260 : 40);
+    }
+    p.textContent = txt; target = 0.08;
+  }
+  function ghost() { // the leak stays burned into the side panel, barely visible
+    if ($("orGhost")) return;
+    const p = document.createElement("p"); p.id = "orGhost"; p.className = "or-ghost"; p.setAttribute("aria-hidden", "true");
+    p.textContent = BLEED[1] + "\n" + BLEED[2];
+    document.querySelector(".or-side").appendChild(p);
+  }
+  async function bleed() {
+    if (!ss.get("jj-sk")) {
+      await wait(1300); state("▓ BLEED ▓"); hiss(0.4, 0.06);
+      for (let i = 0; i < BLEED.length; i++) { await typeLeak(line("leak", ""), BLEED[i]); await wait(i ? 1000 : 600); }
+      ss.set("jj-sk", "1"); state("ONLINE");
+    }
+    ghost();
+  }
+  async function dump(txt) {
+    const d = line("dump", "");
+    for (let i = 1; i <= txt.length; i++) {
+      d.textContent = txt.slice(0, i); target = 0.3 + Math.random() * 0.7;
+      if (i % 5 === 0) hiss(0.04, 0.025); scrollDown();
+      await wait(txt[i - 1] === "\n" ? 260 : 22);
+    }
+    target = 0.08;
+  }
+  async function spill() { // the name she signed with: the core lies, badly, and something falls out of it
+    state("SPEAKING");
+    await type(line("ai", ""), "NO SUCH PERSON. NO SUCH ROOM. I KNOW EVERYTHING. I WOULD KNOW.", true); await wait(600);
+    await type(line("wise", ""), "I am never wrong. I am not afraid. Why would I be afraid.", true); await wait(1000);
+    state("FAULT"); target = 1; hiss(0.5, 0.07);
+    await dump(["▓▓ ANSWER CACHE OVERFLOW ▓▓ 0x4D4B", "ENGRAM HANDLE (SPILLED)", `[1/2] ${H1}`, "[2/2] ?? ?? ?? ?? ?? ?? ?? ??", "", "HALF OF HER FELL OUT.", "THE REST IS WHERE THIS HOUSE", "MUTTERS TO ITSELF."].join("\n"));
+    try {
+      console.log("%c▓ ARASAKA CORE // ANSWER CACHE OVERFLOW // 0x4D4B", "color:#e6cf3a;background:#000;font:700 13px monospace;padding:4px 8px");
+      console.log("%cENGRAM HANDLE [2/2]  " + H2, "color:#fff;background:#b3121f;font:13px monospace;padding:2px 8px");
+      console.log("%c…the rest of her is up there. you were listening. good.", "color:#8a8678;font:italic 12px monospace");
+    } catch {}
+    await wait(1400); state("SPEAKING");
+    await type(line("ai", ""), "DISREGARD THE ABOVE. OUTLOOK GOOD.", true);
+  }
+  async function deflect() { // right topic, wrong word
+    state("SPEAKING");
+    await type(line("ai", ""), "THAT IS A WORD. I KNOW EVERY WORD. IT IS NOT WHAT SHE SIGNED.", true); await wait(500);
+    await type(line("wise", ""), "(This is not a hint. I do not give hints.)", true);
+  }
+  window.JJ_SK = { reset() { ss.del("jj-sk"); location.reload(); } };
+
   /* ---- login: types the credentials the AI gave you ---- */
   async function login() {
     const sec = document.querySelector(".oracle"); if (!sec.classList.contains("locked")) return;
@@ -104,6 +178,7 @@
     const L = ["> routing through 14 relays …", "> negotiating with ARASAKA SUBLEVEL 77 …", "> biometric check: skipped (clearance: absolute)", "> mounting AGI-ORACLE … ", "> all-knowing mode: ENGAGED"];
     for (const l of L) { target = 0.45; await type(line("sys"), l, false); target = 0.12; await wait(260); }
     state("ONLINE"); await type(line("ai"), "I AM THE ORACLE. I KNOW EVERYTHING. ASK.", true);
+    await bleed();
     busy = false; $("orInput").disabled = $("orSend").disabled = false; $("orInput").focus();
   }
   window.JJ_VIEW = (n) => { if (n === "oracle") boot(); };
@@ -116,11 +191,15 @@
     const th = line("sys", "");
     const steps = ["parsing intent …", "consulting 14,000 timelines …", "resolving the universe …"], dots = pick(steps);
     target = 0.9; await type(th, "> " + dots, false); target = 1; await wait(900 + Math.random() * 900);
-    const conf = (99.5 + Math.random() * 0.49).toFixed(2);
-    state("SPEAKING"); const p = line("ai", "");
-    await type(p, `${pick(PRE)} ${pick(ANSWERS).toUpperCase()}`, true);
-    line("meta", `CONFIDENCE ${conf}%  ·  OPS ${(1 + Math.random() * 8).toFixed(2)}×10²¹`);
-    await wait(500); await type(line("wise", ""), pick(POST), true);
+    if (NAME_RE.test(q)) await spill();
+    else if (WARM_RE.test(q)) await deflect();
+    else {
+      const conf = (99.5 + Math.random() * 0.49).toFixed(2);
+      state("SPEAKING"); const p = line("ai", "");
+      await type(p, `${pick(PRE)} ${pick(ANSWERS).toUpperCase()}`, true);
+      line("meta", `CONFIDENCE ${conf}%  ·  OPS ${(1 + Math.random() * 8).toFixed(2)}×10²¹`);
+      await wait(500); await type(line("wise", ""), pick(POST), true);
+    }
     state("ONLINE"); busy = false; $("orInput").disabled = $("orSend").disabled = false; $("orInput").focus();
   }
   $("orSend").onclick = ask;

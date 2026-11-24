@@ -479,3 +479,14 @@ body.infected .oracle { --g: #b3121f; }
 .bw-up { width: min(560px, 100%); } .bw-up-t { display: flex; justify-content: space-between; font-size: 12px; letter-spacing: 4px; color: #e6cf3a; margin-bottom: 6px; }
 .bw-up-bar { height: 10px; border: 1px solid #e6cf3a; padding: 1px; } .bw-up-bar i { display: block; height: 100%; width: 0; background: repeating-linear-gradient(90deg, #e6cf3a 0 8px, transparent 8px 10px); }
 @media (max-width: 800px) { .or-logo { height: 46px; } }
+
+/* ---- ARG layer: the core's cache bleed ---- */
+.or-out .leak { color: #b3121f; font-size: 13px; letter-spacing: 1px; text-shadow: 2px 0 rgba(255,42,58,.35), -2px 0 rgba(120,255,255,.2); animation: leakflick 3.2s steps(1) infinite; }
+.or-out .dump { color: #ff4d57; font-size: 13px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; border-left: 2px solid #b3121f; padding-left: 10px; margin: 8px 0; text-shadow: 0 0 8px rgba(255,42,58,.35); }
+.or-ghost { margin: 18px 0 0; font: 10px/1.6 var(--mono); letter-spacing: 1px; color: rgba(179,18,31,.55); white-space: pre-line; animation: ghostburn 9s infinite; user-select: text; }
+@keyframes leakflick { 0%, 92%, 100% { opacity: 1; transform: none; } 94% { opacity: .35; transform: translateX(-2px); } 96% { opacity: 1; transform: translateX(2px); } }
+@keyframes ghostburn { 0%, 70%, 100% { opacity: 1; } 72% { opacity: .3; } 74% { opacity: 1; } 76% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .or-out .leak, .or-ghost { animation: none; } }
+/* mobile: let the Oracle panel shrink to the screen instead of the canvas forcing it wider */
+.or-grid > * { min-width: 0; }
+@media (max-width: 800px) { .or-grid { grid-template-columns: minmax(0, 1fr); } }

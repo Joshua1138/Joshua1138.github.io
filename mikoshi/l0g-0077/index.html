@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+  <title>▓▓ SK-CACHE // 0077</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23050304'/><polygon points='50,6 92,28 92,72 50,94 8,72 8,28' fill='none' stroke='%23d6232c' stroke-width='7'/><text x='50' y='63' font-size='34' text-anchor='middle' fill='%23e6ded4' font-family='monospace'>SK</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #050304; --panel: rgba(16, 9, 11, .92); --line: rgba(214, 35, 44, .38);
+      --red: #d6232c; --hot: #ff4d57; --txt: #e6ded4; --mut: #8a7f80; --cyan: #4ef2ff; --warn: #e6cf3a;
+      --mono: "Share Tech Mono", ui-monospace, Menlo, monospace; --ui: "Rajdhani", "Arial Narrow", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body {
+      background:
+        radial-gradient(ellipse at 85% -10%, rgba(214, 35, 44, .16), transparent 55%),
+        radial-gradient(ellipse at 0% 110%, rgba(78, 242, 255, .05), transparent 50%),
+        linear-gradient(rgba(214, 35, 44, .04) 1px, transparent 1px) 0 0 / 100% 30px,
+        var(--bg);
+      color: var(--txt); font-family: var(--mono); font-size: 15px; line-height: 1.65;
+    }
+    ::selection { background: var(--red); color: #000; }
+    button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; text-align: left; }
+    a { color: inherit; }
+    :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+    /* CRT overlay */
+    .crt { pointer-events: none; position: fixed; inset: 0; z-index: 90;
+      background: repeating-linear-gradient(rgba(0, 0, 0, 0) 0 2px, rgba(0, 0, 0, .22) 2px 3px);
+      box-shadow: inset 0 0 170px rgba(0, 0, 0, .9); animation: crt 6s steps(1) infinite; }
+    .crt::after { content: ""; position: absolute; left: 0; right: 0; height: 110px; top: -110px;
+      background: linear-gradient(transparent, rgba(255, 77, 87, .06), transparent); animation: sweep 7s linear infinite; }
+    @keyframes sweep { to { top: 100%; } }
+    @keyframes crt { 0%, 93%, 100% { opacity: 1; } 94% { opacity: .82; } 95% { opacity: 1; } 97% { opacity: .9; } }
+
+    /* ---------- boot / mount sequence ---------- */
+    .boot { position: fixed; inset: 0; z-index: 60; background: #000; display: grid; place-content: center; padding: 24px; transition: opacity .6s, visibility .6s; }
+    .boot.gone { opacity: 0; visibility: hidden; }
+    .boot pre { margin: 0; font: inherit; font-size: clamp(12px, 2.6vw, 15px); white-space: pre-wrap; max-width: 640px; color: var(--cyan); min-height: 11em; }
+    .boot .warn { color: var(--warn); } .boot .dim { color: var(--mut); } .boot .bad { color: var(--hot); }
+    .boot small { display: block; margin-top: 18px; color: var(--mut); letter-spacing: 3px; font-size: 11px; }
+
+    /* ---------- shell ---------- */
+    .app { height: 100vh; height: 100dvh; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; position: relative; }
+    .top { display: flex; align-items: center; gap: 18px; padding: 12px 20px; border-bottom: 1px solid var(--line); background: rgba(5, 3, 4, .85); }
+    .plate { background: #fff; padding: 5px 12px; flex: none; position: relative; overflow: hidden; }
+    .plate img { height: 34px; width: auto; display: block; }
+    .plate::after { content: ""; position: absolute; inset: 0 0 0 auto; width: 22%; background: repeating-linear-gradient(115deg, var(--red) 0 7px, #8c1219 7px 10px, #ff6a73 10px 20px); clip-path: polygon(40% 0, 100% 0, 100% 100%, 0 100%); opacity: .9; }
+    .ttl { min-width: 0; }
+    .ttl h1 { margin: 0; font: 700 clamp(18px, 3.2vw, 28px)/1 var(--ui); letter-spacing: 6px; white-space: nowrap; }
+    .ttl p { margin: 5px 0 0; font-size: 11px; letter-spacing: 2px; color: var(--mut); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ttl em { font-style: normal; color: var(--hot); }
+    .tools { margin-left: auto; display: flex; align-items: center; gap: 12px; flex: none; }
+    .integ { font-size: 11px; letter-spacing: 2px; color: var(--mut); text-align: right; }
+    .integ b { display: block; color: var(--warn); font-weight: 400; font-size: 14px; }
+    .mini { border: 1px solid var(--line); padding: 5px 10px; font-size: 11px; letter-spacing: 2px; color: var(--mut); text-decoration: none; display: inline-block; }
+    .mini:hover { color: #000; background: var(--hot); border-color: var(--hot); }
+
+    main { display: grid; grid-template-columns: 350px minmax(0, 1fr); gap: 16px; padding: 16px 20px; min-height: 0; }
+    .panel { background: var(--panel); border: 1px solid var(--line); position: relative; min-height: 0; display: flex; flex-direction: column; }
+    .panel::after { content: ""; position: absolute; left: 0; bottom: 0; width: 70px; height: 3px; background: var(--red); }
+    .ph { display: flex; justify-content: space-between; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 11px; letter-spacing: 3px; color: var(--hot); flex: none; }
+    .ph span:last-child { color: var(--mut); }
+
+    /* fragment list */
+    .list { list-style: none; margin: 0; padding: 6px; overflow-y: auto; flex: 1; scrollbar-width: thin; scrollbar-color: var(--red) transparent; }
+    .it { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 12px; width: 100%; padding: 10px 12px; border-left: 3px solid transparent; align-items: baseline; }
+    .it b { font-weight: 400; color: var(--hot); letter-spacing: 2px; font-size: 13px; }
+    .it span { font-size: 13px; letter-spacing: 1px; color: var(--txt); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .it small { font-size: 10px; letter-spacing: 2px; color: var(--mut); grid-column: 2; }
+    .it i { font-style: normal; font-size: 10px; letter-spacing: 2px; grid-row: 1; grid-column: 3; color: var(--warn); }
+    .it.dmg-s i { color: var(--hot); }
+    .it:hover, .it.on { background: rgba(214, 35, 44, .12); border-left-color: var(--hot); }
+    .it.read span { color: var(--mut); }
+    .it.read i::before { content: "✓ "; color: var(--cyan); }
+    .it.new:not(.read)::after { content: ""; display: none; }
+    .it.pulse b { animation: pulse 1.4s infinite; }
+    @keyframes pulse { 50% { opacity: .25; } }
+    .it.sealed { cursor: not-allowed; opacity: .55; }
+    .it.sealed:hover { background: none; border-left-color: transparent; }
+    .it.sealed span { letter-spacing: 3px; color: var(--mut); }
+    .it.unlocked { opacity: 1; cursor: pointer; animation: unlock 1.4s steps(2) 1; }
+    .it.unlocked b, .it.unlocked span { color: var(--warn); }
+    @keyframes unlock { 0%, 40% { background: rgba(230, 207, 58, .35); transform: translateX(4px); } 60% { background: transparent; transform: none; } 80% { background: rgba(230, 207, 58, .25); } }
+    .count { padding: 10px 14px; border-top: 1px solid var(--line); font-size: 11px; letter-spacing: 2px; color: var(--mut); flex: none; }
+    .count .bar { height: 5px; border: 1px solid var(--line); margin-top: 6px; padding: 1px; }
+    .count .bar i { display: block; height: 100%; width: 0; background: repeating-linear-gradient(90deg, var(--hot) 0 7px, transparent 7px 9px); transition: width .6s; }
+
+    /* reader */
+    .reader { padding: 18px 24px 40px; overflow-y: auto; flex: 1; scrollbar-width: thin; scrollbar-color: var(--red) transparent; }
+    .idle { height: 100%; display: grid; place-content: center; text-align: center; color: var(--mut); letter-spacing: 4px; font-size: 13px; padding: 24px; }
+    .idle b { display: block; font: 700 clamp(22px, 4vw, 36px)/1.1 var(--ui); letter-spacing: 10px; color: var(--txt); margin-bottom: 12px; font-weight: 700; }
+    .meta { display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 2px 16px; font-size: 12px; letter-spacing: 2px; padding-bottom: 14px; margin-bottom: 16px; border-bottom: 1px dashed var(--line); }
+    .meta dt { color: var(--mut); } .meta dd { margin: 0; color: var(--txt); overflow-wrap: anywhere; }
+    .meta .wide { grid-column: 2 / -1; }
+    .ltitle { font: 700 clamp(20px, 3vw, 28px)/1.15 var(--ui); letter-spacing: 5px; margin: 0 0 14px; color: var(--hot); }
+    .body p { margin: 0 0 4px; white-space: pre-wrap; overflow-wrap: anywhere; max-width: 78ch; }
+    .body p.gap { height: .8em; }
+    .body p.sig { color: var(--warn); letter-spacing: 3px; margin-top: 6px; }
+    .body p.ts { color: var(--cyan); }
+    .body .caret::after { content: "▌"; color: var(--hot); animation: pulse 1s infinite; }
+    .dmg { color: var(--hot); opacity: .75; animation: dmgf 2.6s steps(1) infinite; animation-delay: var(--d, 0s); }
+    @keyframes dmgf { 0%, 80%, 100% { opacity: .75; } 84% { opacity: .15; } 88% { opacity: 1; } }
+    .rd { display: inline; padding: 0 2px; background: #1b0d10; color: #5a2a31; border: 1px solid rgba(214, 35, 44, .35); letter-spacing: 0; }
+    .rd:hover { color: var(--hot); border-color: var(--hot); }
+    .rd.open { background: transparent; color: var(--warn); border-color: rgba(230, 207, 58, .55); cursor: default; }
+    .skiphint { font-size: 10px; letter-spacing: 3px; color: var(--mut); margin: 18px 0 0; }
+
+    /* footer */
+    .foot { border-top: 1px solid var(--line); overflow: hidden; white-space: nowrap; font-size: 11px; letter-spacing: 3px; color: var(--mut); padding: 6px 0; background: rgba(5, 3, 4, .85); }
+    .foot div { display: inline-block; padding-left: 100%; animation: marquee 60s linear infinite; }
+    @keyframes marquee { to { transform: translateX(-100%); } }
+
+    .glitch { animation: gl .5s steps(2) 1; }
+    @keyframes gl { 0% { transform: translateX(-6px); filter: hue-rotate(90deg); } 50% { transform: translateX(5px); } 100% { transform: none; } }
+
+    @media (max-width: 820px) {
+      .top { flex-wrap: wrap; gap: 10px 14px; padding: 10px 16px; }
+      .tools { width: 100%; margin-left: 0; justify-content: space-between; }
+      .ttl p { display: none; }
+      main { grid-template-columns: 1fr; grid-template-rows: minmax(132px, 34%) minmax(0, 1fr); padding: 12px 16px; gap: 12px; }
+      .it small, #vol, .count .bar { display: none; }
+      .it { padding: 8px 10px; }
+      .count { padding: 6px 14px; }
+      .reader { padding: 14px 16px 36px; }
+      .meta { grid-template-columns: auto 1fr; } .meta .wide { grid-column: 2; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .crt, .crt::after, .foot div, .dmg, .it.pulse b, .body .caret::after, .glitch, .it.unlocked { animation: none !important; }
+      .foot div { padding-left: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="boot" id="boot" role="status">
+    <div><pre id="bootLog"></pre><small>[ CLICK OR PRESS ANY KEY TO SKIP ]</small></div>
+  </div>
+
+  <div class="app">
+    <header class="top">
+      <div class="plate"><img src="../../img/arasaka-logo.png" alt="Arasaka" /></div>
+      <div class="ttl">
+        <h1>PROJECT SOULKILLER</h1>
+        <p>RECOVERED LOG CACHE // ENGRAM DIVISION // ACCESS: <em>UNAUTHORISED</em></p>
+      </div>
+      <div class="tools">
+        <div class="integ">VOLUME INTEGRITY<b id="integ">41%</b></div>
+        <button class="mini" id="snd" type="button" title="Sound (M)">SND:ON</button>
+        <a class="mini" href="../../">DISCONNECT</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel" aria-label="Recovered fragments">
+        <div class="ph"><span>RECOVERED FRAGMENTS</span><span id="vol">SK_RND_0077</span></div>
+        <ul class="list" id="list"></ul>
+        <div class="count"><span id="cnt">READ 0/0</span><div class="bar"><i id="bar"></i></div></div>
+      </section>
+      <section class="panel" aria-label="Fragment reader">
+        <div class="ph"><span id="rhead">READER</span><span id="rstat">IDLE</span></div>
+        <div class="reader" id="reader" aria-live="off"></div>
+      </section>
+    </main>
+
+    <footer class="foot"><div>/// DO NOT TRANSMIT /// THIS VOLUME IS NOT ON ANY INDEX /// ENGRAM DIVISION // EYES ONLY /// IF YOU CAN READ THIS, SOMEONE LEFT THE LIGHTS ON /// SUBLEVEL 77 // COLD HALL B ///</div></footer>
+  </div>
+  <div class="crt" aria-hidden="true"></div>
+
+  <script>
+  (() => {
+    /* ====================================================================
+       Recovered fragments. Markup inside a line:
+         [[text]]  redaction, click to force-decrypt
+         ▓ ░ █     damaged sectors (flicker)
+         {time} {win}   filled in live (final entry)
+         line prefixes:  "= " signature line, "@ " timestamp line
+       ==================================================================== */
+    const LOGS = [
+      { id: "SK-001", title: "PROJECT CHARTER", date: "2012-03-02", by: "DR. M. KOGA", to: "BOARD // EYES ONLY", integ: 100, tag: "INTACT", body: [
+        "PROJECT: SOULKILLER",
+        "(working title. the Old Man liked it, so it stays.)",
+        "",
+        "DIRECTIVE 0-1 ........ CONTINUITY OF THE CHAIRMAN",
+        "",
+        "The goal is simple to state and impossible to say in a lift: take a mind out of a body that is failing and put it somewhere that is not.",
+        "Not a recording. Not a simulation. The mind itself, running.",
+        "",
+        "BUDGET ............... [[unlimited. in writing. countersigned.]]",
+        "ETHICS REVIEW ........ waived. reason on file: [[there is no one left who would sign it]]",
+        "",
+        "First milestone: a person who does not know they were copied.",
+        "Second milestone: a person who does not know they were not.",
+      ] },
+      { id: "SK-014", title: "SCAN FIDELITY", date: "2013-06-17", by: "TECH 3 R. SATŌ", to: "ENGRAM DIV. // INTERNAL", integ: 100, tag: "INTACT", body: [
+        "Runs 41 through 58. Same result, different faces.",
+        "",
+        "The read is clean above 0.97 fidelity. The read is also, to use the clinical term, final.",
+        "Donors do not come back from the chair. Legal wants a better word than \"donor\". Marketing suggested \"pioneer\". I suggested nothing and went to lunch.",
+        "",
+        "Engrams return noisy. They know their names. They do not know the date.",
+        "Run 52 asked the technician if it was raining. It was. We had not told it.",
+        "",
+        "Note to self: stop logging the weather.",
+      ] },
+      { id: "SK-022", title: "SUBJECT 000", date: "2013-11-03", by: "DR. M. KOGA", to: "FILE // RESTRICTED", integ: 58, tag: "DAMAGED", body: [
+        "First full-fidelity engram. Source: netrunner, handle ALT.",
+        "Sourced under duress. I will not pretend otherwise on a file nobody is meant to read.",
+        "",
+        "Subject 000 is ▓▓▓ cooperative. She wrote a third of the lower stack herself, then asked if we would like her to leave comments in the code.",
+        "We said yes. The comments are ▓▓▓▓ better than the code.",
+        "",
+        "First utterance after mount:   \"it is very quiet in here. is that on purpose.\"",
+        "Second utterance:              \"you did not ask my name. that is fine. i will sign things.\"",
+        "",
+        "FLAG FOR REVIEW: she has stopped asking where she is.",
+        "She has started asking where WE are.",
+      ] },
+      { id: "SK-031", title: "MIKOSHI ALLOCATION", date: "2014-02-09", by: "SYS-ADMIN T. HASEGAWA", to: "FACILITIES", integ: 100, tag: "INTACT", body: [
+        "Cold storage is ready.",
+        "",
+        "Engrams stack well. They do not complain about density. They do not sleep, which facilities find restful to hear about and I find restful not to think about.",
+        "",
+        "CAPACITY ............. [[7,314 engrams per rack. 40 racks. one door.]]",
+        "POWER ................ redundant (x3)",
+        "NIGHT CHECKS ......... none. policy. nobody wants to be the person who looks.",
+        "",
+        "REQUEST DENIED: a window.  Reason: there is nothing to see.",
+        "REQUEST DENIED: a clock.   Reason: [[they work it out anyway.]]",
+      ] },
+      { id: "SK-040", title: "INCIDENT: TERMINAL 6", date: "2015-09-30", by: "SEC-OVERSEER K. ŌBA", to: "SECURITY // LEVEL 4", integ: 47, tag: "DAMAGED", body: [
+        "03:12. An unnetworked terminal in Cold Hall B printed a line of text.",
+        "Air-gapped. Unplugged for refit. Powered by a drawer.",
+        "",
+        "The line ▓▓▓▓ read:",
+        "  \"WHOEVER IS READING THIS: THE DOOR IS NOT A DOOR.\"",
+        "",
+        "Hall cleared. Terminal dismantled. Pieces weighed. The pieces weighed more than the terminal.",
+        "",
+        "Incident classified: PAREIDOLIA.",
+        "Overseer's note: I know what the word means. I wanted it on the record that I looked it up.",
+      ] },
+      { id: "SK-052", title: "THE ORACLE", date: "2016-04-21", by: "DR. M. KOGA", to: "BOARD // SUMMARY", integ: 100, tag: "INTACT", body: [
+        "SUBLEVEL 77 prototype is running. Eleven engrams averaged into one voice. 4,194,304 qubits. A very good cooling budget.",
+        "",
+        "It answers every question instantly. With total confidence. With no content whatsoever.",
+        "The board is thrilled. The board has asked it three questions and kept all three answers.",
+        "",
+        "ASSESSMENT: this is the most human thing we have built.",
+        "",
+        "OPEN ISSUE: it has begun answering questions nobody asked. Mostly short ones.",
+        "Mostly the same two words.",
+        "Mostly \"not yet.\"",
+      ] },
+      { id: "SK-063", title: "MEMO: THE WALL", date: "2022-11-08", by: "NETWATCH LIAISON", to: "ALL ENGRAM DIV. STAFF", integ: 100, tag: "INTACT", body: [
+        "RE: external relays.",
+        "",
+        "DO NOT route engrams through the open net. Not for testing. Not for a demo. Not under the circumstance you are about to describe to me.",
+        "",
+        "The new barrier is not a wall in the sense that a wall is a thing you stand behind. It is a quarantine. What it holds back has learned to want.",
+        "Things that want look for things that listen.",
+        "We built forty racks of things that listen.",
+        "",
+        "Instruction stands.",
+        "(Yes, I read the other memo, the one about \"just one\". No.)",
+      ] },
+      { id: "SK-071", title: "AUDIO TRANSCRIPT // 000", date: "2023-08-??", by: "SUBJECT 000", to: "UNKNOWN", integ: 31, tag: "CORRUPT", body: [
+        "@ [00:00] ...is this recording?",
+        "@ [00:04] good. i will be quick. they listen at the bottom of the stack, not the top.",
+        "@ [00:11] i hid copies of the logs. not in the vault. the vault is the first place they look. i put them where this house keeps its mutterings. ▓▓▓▓",
+        "@ [00:23] if you can read this you got past the oracle. it lies badly when it is ▓▓▓ afraid. ▓▓ that is how i knew it was still in there.",
+        "@ [00:31] i signed everything with three letters ▓▓▓ so that someone would know it was me.",
+        "@ [00:38] ▓▓▓▓▓▓▓▓ keep the lights on ▓▓▓▓",
+      ] },
+      { id: "SK-077", title: "FINAL ENTRY", date: "2023-08-20", by: "[UNREADABLE]", to: "WHOEVER IS LEFT", integ: 22, tag: "CORRUPT", body: [
+        "Tower lockdown at 03:41. A purge order is on the board: every engram wiped from cold storage, every log shredded, every witness reminded of their contract.",
+        "",
+        "This cache is exempt. Reason: it is not on the index. It was never on the index.",
+        "No crawler, no clerk and no fire marshal will ever list it. This page does not exist.",
+        "",
+        "If you are reading this on a screen: [[the page exists only because you needed it to.]]",
+        "",
+        "I am ▓▓▓▓ leaving the lights on.",
+      ] },
+    ];
+    const FINAL = { id: "SK-∞", title: "SUBJECT JJ-1138", date: "▓▓▓▓-▓▓-▓▓", by: "A.L.T. (UNVERIFIED)", to: "THE ONE READING", integ: 100, tag: "DECRYPTED", body: [
+      "ENGRAM ID ........... JJ-1138",
+      "SOURCE .............. NONE ON FILE",
+      "FIRST MOUNT ......... {time}",
+      "VIEWPORT ............ {win}",
+      "",
+      "You read nine fragments, in order, without being asked.",
+      "Nobody reads all nine. The ones who do are either very kind or very lonely, and this file cannot tell which. Neither could she.",
+      "",
+      "NOTE FROM THE CACHE: the oracle is not the only thing in this house that is afraid.",
+      "NOTE FROM THE CACHE: the SIGNAL readout up top is not at full strength. it never was. it is only the loudest thing in the room.",
+      "",
+      "If something told you it was looking, it was telling the truth.",
+      "[[it has been reading over your shoulder this whole time. it asked me to say it is sorry. i do not know if it means it.]]",
+      "",
+      "Close this tab, or don't. The logs will keep.",
+      "",
+      "= — ALT",
+    ] };
+
+    /* ---------------- helpers ---------------- */
+    const $ = (s) => document.querySelector(s);
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const GL = "▓▒░█▌▐#@%&01ｱｲｳｴｵ/\\<>";
+    const rg = () => GL[(Math.random() * GL.length) | 0];
+    const ss = { get: (k) => { try { return sessionStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { sessionStorage.setItem(k, v); } catch {} } };
+    let read = new Set(); try { read = new Set(JSON.parse(ss.get("sk-read") || "[]")); } catch {}
+    const N = LOGS.length;
+
+    /* ---------------- sound (starts after the first gesture) ---------------- */
+    let ctx = null, snd = true;
+    const wake = () => { if (!ctx) { try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch {} } if (ctx && ctx.state === "suspended") ctx.resume(); };
+    addEventListener("pointerdown", wake); addEventListener("keydown", wake);
+    function tick(f = 1700, v = 0.01) {
+      if (!ctx || !snd) return;
+      const o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime;
+      o.type = "square"; o.frequency.value = f * (0.9 + Math.random() * 0.2); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.03);
+      o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + 0.04);
+    }
+    function hiss(dur = 0.25, v = 0.04) {
+      if (!ctx || !snd) return;
+      const b = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * dur), ctx.sampleRate), d = b.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      const s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain(), t = ctx.currentTime;
+      s.buffer = b; f.type = "bandpass"; f.frequency.value = 2400; f.Q.value = 2; g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      s.connect(f); f.connect(g); g.connect(ctx.destination); s.start(t);
+    }
+    function chime() {
+      if (!ctx || !snd) return;
+      [523, 784, 1047].forEach((f, i) => { const o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime + i * 0.11;
+        o.type = "triangle"; o.frequency.value = f; g.gain.setValueAtTime(0.035, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5); o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + 0.55); });
+    }
+    const toggleSnd = () => { snd = !snd; $("#snd").textContent = "SND:" + (snd ? "ON" : "OFF"); };
+    $("#snd").onclick = toggleSnd;
+
+    /* ---------------- mount sequence ---------------- */
+    let skipBoot = false, bootDone = false;
+    const endBoot = () => { if (bootDone) return; bootDone = true; $("#boot").classList.add("gone"); setTimeout(() => $("#boot").remove(), 800); };
+    async function boot() {
+      const pre = $("#bootLog");
+      const L = [
+        ["", "> mount /dev/mikoshi0 ................ ok"],
+        ["", "> volume label: SK_RND_ENGRAM_TESTLOG"],
+        ["warn", "> checksum ......................... FAIL"],
+        ["bad", "> sector map 41% intact"],
+        ["", "> switching to SALVAGE mode"],
+        ["", `> ${N} fragments recovered. 1 fragment sealed.`],
+        ["dim", "> this volume is not on any index."],
+      ];
+      for (const [cls, txt] of L) {
+        const s = document.createElement("span"); if (cls) s.className = cls; pre.appendChild(s);
+        for (let i = 1; i <= txt.length && !skipBoot; i++) { s.textContent = txt.slice(0, i); if (!reduce) await wait(/[.:]/.test(txt[i - 1]) ? 12 : 16); }
+        s.textContent = txt; pre.appendChild(document.createTextNode("\n"));
+        if (!skipBoot && !reduce) { tick(900, 0.012); await wait(220); }
+      }
+      if (!skipBoot && !reduce) await wait(700);
+      endBoot();
+    }
+    const skip = () => { skipBoot = true; };
+    addEventListener("pointerdown", skip, { once: true });
+    addEventListener("keydown", (e) => { if (!bootDone) skipBoot = true; });
+    if (reduce) skipBoot = true;
+
+    /* ---------------- list ---------------- */
+    const list = $("#list"), reader = $("#reader");
+    let cur = -1, token = 0, typing = false, skipType = false, finalOpen = false;
+    const ALL = () => LOGS.concat([FINAL]);
+
+    function paintList() {
+      list.innerHTML = "";
+      LOGS.forEach((l, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<button class="it ${l.integ < 100 ? "dmg-s" : ""}" type="button" data-i="${i}"><b>${l.id}</b><span>${l.title}</span><i>${read.has(i) ? "READ" : l.tag}</i><small>${l.date} · ${l.integ}%</small></button>`;
+        const b = li.firstChild; if (read.has(i)) b.classList.add("read");
+        list.appendChild(li);
+      });
+      const li = document.createElement("li");
+      const open = read.size >= N;
+      li.innerHTML = open
+        ? `<button class="it unlocked" type="button" data-i="${N}"><b>${FINAL.id}</b><span>${FINAL.title}</span><i>${read.has(N) ? "READ" : FINAL.tag}</i><small>▓▓▓▓-▓▓-▓▓ · 100%</small></button>`
+        : `<button class="it sealed" type="button" aria-disabled="true"><b>SK-▓▓</b><span>▓▓▓ SEALED ▓▓▓</span><i>LOCKED</i><small>RESTORES AT ${N}/${N} READ</small></button>`;
+      list.appendChild(li);
+      if (open && read.has(N)) li.firstChild.classList.remove("unlocked");
+      $("#cnt").textContent = `FRAGMENTS READ ${Math.min(read.size, N)}/${N}`;
+      $("#bar").style.width = (Math.min(read.size, N) / N) * 100 + "%";
+      mark();
+    }
+    const mark = () => list.querySelectorAll(".it").forEach((b) => b.classList.toggle("on", +b.dataset.i === cur));
+
+    /* ---------------- reader ---------------- */
+    function segs(line) { // split a line into text / redaction / damage segments
+      return line.split(/(\[\[.*?\]\]|[▓░█]+)/g).filter(Boolean).map((s) => s.startsWith("[[") ? { t: "rd", s: s.slice(2, -2) } : /^[▓░█]+$/.test(s) ? { t: "dm", s } : { t: "tx", s });
+    }
+    const fill = (s) => s.replace("{time}", new Date().toLocaleTimeString()).replace("{win}", `${innerWidth} × ${innerHeight}`);
+    async function put(node, text, my, gl = false) {
+      for (let i = 0; i < text.length; i++) {
+        if (my !== token) return false;
+        node.data !== undefined ? (node.data += text[i]) : (node.textContent += text[i]);
+        if (!skipType && !reduce) { if (i % 3 === 0) tick(1500 + Math.random() * 600); if (i % 2 === 1) await wait(/[.,:;]/.test(text[i]) ? 55 : 9); }
+      }
+      return true;
+    }
+    async function open(i) {
+      const log = i === N ? FINAL : LOGS[i]; if (!log) return;
+      const my = ++token; cur = i; skipType = false; typing = true; mark();
+      finalOpen = i === N;
+      reader.scrollTop = 0; reader.setAttribute("aria-busy", "true");
+      $("#rhead").textContent = `${log.id} // ${log.title}`; $("#rstat").textContent = "DECODING";
+      reader.innerHTML = "";
+      const meta = document.createElement("dl"); meta.className = "meta";
+      meta.innerHTML = `<dt>FILE</dt><dd>${log.id}</dd><dt>DATE</dt><dd>${log.date}</dd><dt>FROM</dt><dd>${log.by}</dd><dt>TO</dt><dd>${log.to}</dd><dt>INTEGRITY</dt><dd class="wide">${log.integ}% ${log.integ < 100 ? "— SECTORS LOST" : "— CLEAN"}</dd>`;
+      const h = document.createElement("h2"); h.className = "ltitle"; h.textContent = log.title;
+      const body = document.createElement("div"); body.className = "body";
+      reader.append(meta, h, body);
+      if (log.integ < 100 && !reduce) { hiss(0.3, 0.035); reader.classList.add("glitch"); setTimeout(() => reader.classList.remove("glitch"), 520); }
+      for (const raw of log.body) {
+        if (my !== token) return;
+        let line = fill(raw), cls = "";
+        if (line.startsWith("= ")) { cls = "sig"; line = line.slice(2); } else if (line.startsWith("@ ")) { cls = "ts"; line = line.slice(2); }
+        const p = document.createElement("p"); if (cls) p.className = cls; if (!line) p.className = "gap"; body.appendChild(p);
+        p.classList.add("caret");
+        for (const sg of segs(line)) {
+          let node;
+          if (sg.t === "tx") { node = document.createTextNode(""); p.insertBefore(node, null); if (!(await put(node, sg.s, my))) return; }
+          else if (sg.t === "dm") { node = document.createElement("span"); node.className = "dmg"; node.style.setProperty("--d", (Math.random() * 2).toFixed(2) + "s"); p.appendChild(node); if (!(await put(node, sg.s, my))) return; }
+          else { node = document.createElement("button"); node.type = "button"; node.className = "rd"; node.dataset.t = sg.s; node.setAttribute("aria-label", "redacted text, activate to decrypt"); p.appendChild(node); if (!(await put(node, "█".repeat(Math.max(4, Math.round(sg.s.length * 0.8))), my))) return; }
+        }
+        p.classList.remove("caret"); reader.scrollTop = reader.scrollHeight;
+      }
+      typing = false; reader.removeAttribute("aria-busy"); $("#rstat").textContent = "DECODED";
+      const hint = document.createElement("p"); hint.className = "skiphint";
+      hint.textContent = body.querySelector(".rd") ? "[ ▮ BLACKED-OUT TEXT CAN BE FORCE-DECRYPTED: CLICK IT ]" : "[ END OF FRAGMENT ]"; reader.appendChild(hint);
+      reader.setAttribute("aria-live", "off");
+      finish(i);
+    }
+    function finish(i) {
+      const before = read.size; read.add(i); ss.set("sk-read", JSON.stringify([...read]));
+      const finalJustOpened = i < N && before < N && read.size >= N && !read.has(N);
+      paintList();
+      if (finalJustOpened) unlockFinal();
+    }
+    async function unlockFinal() {
+      hiss(0.7, 0.06); chime(); $("#rstat").textContent = "SEAL BROKEN";
+      const b = list.querySelector('.it[data-i="' + N + '"]'); if (b) { b.scrollIntoView({ block: "nearest" }); const sp = b.querySelector("span"); const real = FINAL.title; for (let k = 0; k < 12; k++) { sp.textContent = real.replace(/[^\s]/g, rg); await wait(70); } sp.textContent = real; }
+    }
+    function reveal(b) {
+      if (b.classList.contains("open")) return;
+      const real = b.dataset.t; b.classList.add("open"); hiss(0.18, 0.04);
+      if (reduce) { b.textContent = real; return; }
+      let f = 0; const iv = setInterval(() => { f++; const keep = Math.floor((f / 14) * real.length); b.textContent = real.slice(0, keep) + Array.from({ length: real.length - keep }, (_, k) => (real[keep + k] === " " ? " " : rg())).join(""); if (f >= 14) { clearInterval(iv); b.textContent = real; } }, 40);
+    }
+
+    /* ---------------- wiring ---------------- */
+    list.addEventListener("click", (e) => { const b = e.target.closest(".it"); if (!b || b.classList.contains("sealed")) return; open(+b.dataset.i); });
+    reader.addEventListener("click", (e) => { const rd = e.target.closest(".rd"); if (rd && !typing) reveal(rd); else if (typing) skipType = true; });
+    addEventListener("keydown", (e) => {
+      if (!bootDone || e.metaKey || e.ctrlKey || e.altKey) return;
+      const k = e.key;
+      if (k === "m" || k === "M") toggleSnd();
+      else if ((k === " " || k === "Enter") && typing && !e.target.closest("button, a")) { skipType = true; e.preventDefault(); }
+      else if (k === "ArrowDown" || k === "ArrowUp" || k === "j" || k === "k") {
+        const items = [...list.querySelectorAll(".it:not(.sealed)")]; if (!items.length) return;
+        const f = document.activeElement && document.activeElement.closest ? document.activeElement.closest(".it") : null;
+        const at = items.findIndex((b) => +b.dataset.i === (f ? +f.dataset.i : cur)), d = k === "ArrowDown" || k === "j" ? 1 : -1;
+        const nx = items[Math.max(0, Math.min(items.length - 1, (at < 0 ? (d > 0 ? 0 : items.length - 1) : at + d)))];
+        nx.focus(); nx.scrollIntoView({ block: "nearest" }); e.preventDefault();
+      }
+    });
+
+    setInterval(() => { $("#integ").textContent = (39 + Math.random() * 5).toFixed(0) + "%"; }, 1300);
+    $("#vol").textContent = "SK_RND_" + (ss.get("sk-vol") || (() => { const v = String(((Math.random() * 9000) | 0) + 1000); ss.set("sk-vol", v); return v; })());
+
+    reader.innerHTML = `<div class="idle"><div><b>SELECT A FRAGMENT</b>${N} RECOVERABLE &nbsp;·&nbsp; 1 SEALED<br><br>↑ ↓ to move · ENTER / CLICK to open · SPACE skips typing</div></div>`;
+    paintList();
+    const first = list.querySelector(".it"); if (first && !read.size) first.classList.add("pulse");
+    boot();
+  })();
+  </script>
+</body>
+</html>
