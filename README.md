@@ -55,3 +55,12 @@ Uploading the unlisted daemon adds a **▌TUNE** button to the top bar (it also 
 3. A transmission from Subject 000 is decoded. It points at the Mikoshi Vault (Stage 4), whose combination will reuse the three locked values.
 The optional MONITOR button plays the two traces as tones in each ear; the beating stops when they match. Progress is saved in local storage (`jj-signal-tuner`).
 Testing in the console: `JJ_SIGNAL.open()`, `JJ_SIGNAL.solve()`, `JJ_SIGNAL.reset()`.
+
+
+## ARG — Mikoshi Vault (Stage 4)
+Once the signal tuner has been locked (Stage 3), the Mikoshi log cache shows an extra entry, **SK-000 · MIKOSHI VAULT**, at the bottom of the fragment list.
+1. **Tumblers:** three 3-digit wheels, set from the three locked values scaled to whole numbers: pitch ×100 = `341`, height ×10 = `070`, angle ×1 = `138`. A wrong combination reports how many tumblers are engaged.
+2. **Voiceprint:** the four words from the Engram Repair puzzles, in SK order: `curious listen afraid lights`.
+3. The vault opens and SK-000 (Subject 000's root engram) is readable. It tells the player to give the file to the Oracle, which sets up Stage 5.
+Progress is saved in local storage (`jj-vault`: `stage` = `voice` after the tumblers, `open` = `true` when finished). The vault is not counted in the nine fragments that unlock SK-∞.
+Reset in the console: `localStorage.removeItem("jj-vault")`.

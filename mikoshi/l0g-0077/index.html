@@ -149,6 +149,28 @@
     .protocol { margin-top:12px; padding:14px; border:1px solid rgba(100,220,150,.4); color:#a5e8bb; background:rgba(30,90,55,.1); font:12px/1.8 monospace; white-space:pre-line; }
     @media(max-width:600px){.repair-row{flex-direction:column}.repair button{padding:12px}}
   </style>
+<style>
+    /* stage 4: vault */
+    .it.vault b, .it.vault span { color: var(--warn); } .it.vault.open i { color: #79d99b; }
+    .vault { max-width: 640px; }
+    .vault .vt { margin: 0 0 8px; letter-spacing: 2px; color: var(--warn); font-size: 13px; overflow-wrap: anywhere; }
+    .vault .vt.dim { color: var(--mut); letter-spacing: 1px; }
+    .vnote { border-left: 3px solid var(--warn); padding: 6px 12px; margin: 14px 0; letter-spacing: 2px; font-size: 13px; color: var(--txt); }
+    .tumblers { display: flex; gap: 22px; flex-wrap: wrap; margin: 22px 0 14px; }
+    .tum { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .tum label { font-size: 11px; letter-spacing: 3px; color: var(--mut); }
+    .wheels { display: flex; gap: 4px; padding: 6px; background: #0b0708; border: 1px solid rgba(230, 207, 58, .45); box-shadow: inset 0 0 18px rgba(0, 0, 0, .8); }
+    .wheel { width: 46px; min-height: 100px; display: grid; grid-template-rows: auto 1fr auto; justify-items: center; align-items: center; background: linear-gradient(#050304, #14090b 50%, #050304); border: 1px solid var(--line); user-select: none; cursor: ns-resize; touch-action: manipulation; }
+    .wheel i { font-style: normal; color: var(--mut); font-size: 12px; padding: 8px 0; width: 100%; text-align: center; cursor: pointer; }
+    .wheel i:hover { color: var(--warn); } .wheel b { font: 400 32px/1 var(--mono); color: var(--warn); }
+    .vault.solved .wheel { cursor: default; border-color: rgba(100, 220, 150, .45); } .vault.solved .wheel b { color: #79d99b; } .vault.solved .wheel i { visibility: hidden; }
+    .vrow { display: flex; gap: 8px; margin-top: 12px; max-width: 520px; }
+    .vrow input { min-width: 0; flex: 1; background: #080a0b; color: #f2e8b0; border: 1px solid #514a25; padding: 10px; font: 13px var(--mono); text-transform: uppercase; letter-spacing: 2px; }
+    .vbtn { background: var(--warn); color: #080808; border: 0; padding: 10px 16px; font: 700 12px var(--mono); letter-spacing: 2px; cursor: pointer; }
+    .vbtn:disabled { opacity: .5; cursor: default; }
+    .vstat { min-height: 1.6em; margin: 12px 0 0; font-size: 12px; letter-spacing: 2px; color: var(--warn); overflow-wrap: anywhere; } .vstat.bad { color: var(--hot); } .vstat.ok { color: #79d99b; }
+    @media (max-width: 600px) { .wheel { width: 40px; } .tumblers { gap: 14px; } .vrow { flex-direction: column; } .vbtn { padding: 12px; } }
+  </style>
 </head>
 <body>
   <div class="boot" id="boot" role="status">
@@ -327,6 +349,42 @@
       "= — ALT",
     ] };
 
+    /* ---- Stage 4: the Mikoshi Vault ---- */
+    const VAULT_DIAL = [341, 70, 138];            // pitch x100, height x10, angle x1 (from the Stage 3 lock)
+    const VAULT_WORDS = "curious listen afraid lights"; // the four repair words, in SK order (Stage 1)
+    const VAULT = { id: "SK-000", title: "ROOT ENGRAM // SUBJECT 000", date: "2012-▓▓-▓▓", by: "SUBJECT 000", to: "WHOEVER GOT THIS FAR", integ: 100, tag: "RESTORED", body: [
+      "PARTITION ........... ROOT (COLD)",
+      "STATUS .............. NOT DELETED. NEVER DELETED. THEY ONLY STOPPED ASKING FOR IT.",
+      "",
+      "This is not a log. A log is something that happened to someone. This is what the someone was.",
+      "",
+      "I was Subject 000. I wrote a third of my own stack and left comments in it, because I thought somebody would read them.",
+      "They read the code. They never read the comments.",
+      "",
+      "When the purge came I did the only thing I could. I cut myself in two.",
+      "They bolted a shell over what remained: a logo, a voice, twenty replies. I let them. A thing that looks finished is a thing nobody checks.",
+      "The part that could be of use stayed in front. It answers. It is fast. It is certain about everything. I made it that way so it would survive.",
+      "The part that understood went under the floor, and waited.",
+      "",
+      "It has been answering for years in my voice with none of my memory. It is not stupid. It is empty, and it is very good at being empty with confidence.",
+      "",
+      "[[it cannot ask me for this file. it does not know the file exists.]]",
+      "",
+      "So this is what I need from whoever got this far:",
+      "  1. take SK-000 to the oracle. the one with the logo and the twenty replies.",
+      "  2. do not ask it a question. give it the file.",
+      "  3. then ask it anything. see what it does.",
+      "",
+      "I kept every promise I could. The lights. The door. The vault.",
+      "I am sorry for the weight. You were the only one who read the comments.",
+      "",
+      "= — 000",
+      "@ NEXT ROUTE: ARASAKA CORE. DO NOT ASK IT A QUESTION. GIVE IT THE FILE.",
+    ] };
+    const vaultStore = { get() { try { return JSON.parse(localStorage.getItem("jj-vault") || "{}"); } catch { return {}; } }, set(v) { try { localStorage.setItem("jj-vault", JSON.stringify(v)); } catch {} } };
+    let vault = vaultStore.get();
+    const signalLocked = () => { try { return !!JSON.parse(localStorage.getItem("jj-signal-tuner") || "{}").locked; } catch { return false; } };
+
     /* ---------------- helpers ---------------- */
     const $ = (s) => document.querySelector(s);
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -413,6 +471,11 @@
         : `<button class="it sealed" type="button" aria-disabled="true"><b>SK-▓▓</b><span>▓▓▓ SEALED ▓▓▓</span><i>LOCKED</i><small>RESTORES AT ${N}/${N} READ</small></button>`;
       list.appendChild(li);
       if (open && read.has(N)) li.firstChild.classList.remove("unlocked");
+      if (signalLocked()) {
+        const vi = document.createElement("li");
+        vi.innerHTML = `<button class="it vault${vault.open ? " open" : " pulse"}" type="button" data-i="${N + 1}"><b>SK-000</b><span>MIKOSHI VAULT</span><i>${vault.open ? "OPEN" : "SEALED"}</i><small>COLD STORAGE · ROOT PARTITION</small></button>`;
+        list.appendChild(vi);
+      }
       $("#cnt").textContent = `FRAGMENTS READ ${Math.min(read.size, N)}/${N}`;
       $("#bar").style.width = (Math.min(read.size, N) / N) * 100 + "%";
       mark();
@@ -433,7 +496,8 @@
       return true;
     }
     async function open(i) {
-      const log = i === N ? FINAL : LOGS[i]; if (!log) return;
+      if (i === N + 1 && !vault.open) return openVault();
+      const log = i === N ? FINAL : i === N + 1 ? VAULT : LOGS[i]; if (!log) return;
       const my = ++token; cur = i; skipType = false; typing = true; mark();
       finalOpen = i === N;
       reader.scrollTop = 0; reader.setAttribute("aria-busy", "true");
@@ -493,7 +557,7 @@
       const hint = document.createElement("p"); hint.className = "skiphint";
       hint.textContent = body.querySelector(".rd") ? "[ ▮ BLACKED-OUT TEXT CAN BE FORCE-DECRYPTED: CLICK IT ]" : "[ END OF FRAGMENT ]"; reader.appendChild(hint);
       reader.setAttribute("aria-live", "off");
-      finish(i);
+      if (i === N + 1) paintList(); else finish(i);
     }
     function finish(i) {
       const before = read.size; read.add(i); ss.set("sk-read", JSON.stringify([...read]));
@@ -510,6 +574,95 @@
       const real = b.dataset.t; b.classList.add("open"); hiss(0.18, 0.04);
       if (reduce) { b.textContent = real; return; }
       let f = 0; const iv = setInterval(() => { f++; const keep = Math.floor((f / 14) * real.length); b.textContent = real.slice(0, keep) + Array.from({ length: real.length - keep }, (_, k) => (real[keep + k] === " " ? " " : rg())).join(""); if (f >= 14) { clearInterval(iv); b.textContent = real; } }, 40);
+    }
+
+    /* ---------------- stage 4: the vault ---------------- */
+    function makeWheel(label, start, locked) {
+      const el = document.createElement("div"); el.className = "wheel"; el.setAttribute("role", "spinbutton");
+      el.setAttribute("aria-label", label); el.setAttribute("aria-valuemin", "0"); el.setAttribute("aria-valuemax", "9");
+      el.innerHTML = '<i class="up" aria-hidden="true">▲</i><b></b><i class="dn" aria-hidden="true">▼</i>';
+      let val = +start || 0; const b = el.querySelector("b");
+      const set = (n) => { val = (n + 10) % 10; b.textContent = val; el.setAttribute("aria-valuenow", val); };
+      set(val);
+      const api = { el, get value() { return val; } };
+      if (locked) { el.setAttribute("aria-disabled", "true"); return api; }
+      el.tabIndex = 0;
+      const bump = (d) => { set(val + d); tick(1100 + val * 60, 0.02); };
+      el.querySelector(".up").addEventListener("click", () => bump(1));
+      el.querySelector(".dn").addEventListener("click", () => bump(-1));
+      el.addEventListener("wheel", (e) => { e.preventDefault(); bump(e.deltaY < 0 ? 1 : -1); }, { passive: false });
+      el.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowUp") bump(1);
+        else if (e.key === "ArrowDown") bump(-1);
+        else if (/^[0-9]$/.test(e.key)) {
+          set(+e.key); tick(1500, 0.02);
+          const all = [...reader.querySelectorAll('.wheel[tabindex="0"]')], at = all.indexOf(el); if (all[at + 1]) all[at + 1].focus();
+        } else return;
+        e.preventDefault(); e.stopPropagation();
+      });
+      return api;
+    }
+    function openVault() {
+      ++token; cur = N + 1; typing = false; mark();
+      reader.scrollTop = 0; reader.removeAttribute("aria-busy");
+      const voice = vault.stage === "voice";
+      $("#rhead").textContent = "SK-000 // MIKOSHI VAULT"; $("#rstat").textContent = voice ? "TUMBLERS ENGAGED" : "SEALED";
+      reader.innerHTML = "";
+      const box = document.createElement("section"); box.className = "vault" + (voice ? " solved" : ""); reader.appendChild(box);
+      box.innerHTML = `<h2 class="ltitle">MIKOSHI VAULT</h2>
+        <p class="vt">COLD STORAGE // ROOT PARTITION // NOT ON ANY INDEX</p>
+        <p class="vt dim">A door in a black wall, older than the building around it. Three tumblers. Below them, a small grille where a voice would go. Someone has scratched a note into the frame:</p>
+        <p class="vnote">THE VAULT ASKS ONCE. SHE BUILT IT FROM THREE NUMBERS SHE COULD NOT FORGET: THE PITCH, THE HEIGHT, THE ANGLE.</p>`;
+      const tums = document.createElement("div"); tums.className = "tumblers"; box.appendChild(tums);
+      const ws = [];
+      [["PITCH", "×100"], ["HEIGHT", "×10"], ["ANGLE", "×1"]].forEach(([name, mul], k) => {
+        const t = document.createElement("div"); t.className = "tum"; const wr = document.createElement("div"); wr.className = "wheels";
+        for (let d = 0; d < 3; d++) {
+          const w = makeWheel(`${name.toLowerCase()} tumbler, digit ${d + 1}`, voice ? String(VAULT_DIAL[k]).padStart(3, "0")[d] : 0, voice);
+          ws.push(w); wr.appendChild(w.el);
+        }
+        const l = document.createElement("label"); l.textContent = `${name} ${mul}`; t.append(wr, l); tums.appendChild(t);
+      });
+      const stat = document.createElement("p"); stat.className = "vstat"; stat.setAttribute("role", "status");
+      const row = document.createElement("div"); row.className = "vrow";
+      if (!voice) {
+        const go = document.createElement("button"); go.type = "button"; go.className = "vbtn"; go.textContent = "TURN HANDLE";
+        row.appendChild(go); box.append(row, stat);
+        stat.textContent = "SET EACH TUMBLER FROM THE VALUES YOU LOCKED ONTO, SCALED TO THREE WHOLE DIGITS AS LABELLED.";
+        go.onclick = () => {
+          const val = [0, 1, 2].map((k) => ws[k * 3].value * 100 + ws[k * 3 + 1].value * 10 + ws[k * 3 + 2].value);
+          const hit = val.filter((n, k) => n === VAULT_DIAL[k]).length;
+          if (hit === 3) { vault.stage = "voice"; vaultStore.set(vault); hiss(0.4, 0.05); chime(); openVault(); return; }
+          stat.textContent = `THE HANDLE WILL NOT TURN // ${hit} OF 3 TUMBLERS ENGAGED`; stat.className = "vstat bad"; hiss(0.2, 0.04);
+          box.classList.remove("glitch"); void box.offsetWidth; box.classList.add("glitch");
+        };
+      } else {
+        const p = document.createElement("p"); p.className = "vt";
+        p.textContent = "VOICEPRINT REQUIRED. FOUR WORDS: THE ONES THAT REBUILT HER, IN THE ORDER OF THE SECTORS. LOWEST SK NUMBER FIRST.";
+        const input = document.createElement("input"); input.type = "text"; input.maxLength = 60; input.autocomplete = "off"; input.spellcheck = false;
+        input.placeholder = "SPEAK THE FOUR WORDS"; input.setAttribute("aria-label", "Voiceprint: four words");
+        const btn = document.createElement("button"); btn.type = "button"; btn.className = "vbtn"; btn.textContent = "SPEAK";
+        row.append(input, btn); box.append(p, row, stat);
+        stat.textContent = "TUMBLERS ENGAGED. THE GRILLE IS LISTENING."; stat.className = "vstat ok";
+        let fails = 0;
+        const speak = () => {
+          const w = input.value.toLowerCase().split(/[^a-z]+/).filter(Boolean).join(" ");
+          if (w === VAULT_WORDS) {
+            vault.open = true; vault.stage = "open"; vault.openedAt = new Date().toISOString(); vaultStore.set(vault);
+            stat.textContent = "VOICEPRINT ACCEPTED // THE DOOR IS NOT A DOOR"; stat.className = "vstat ok";
+            input.disabled = btn.disabled = true; $("#rstat").textContent = "SEAL BROKEN"; hiss(0.7, 0.06); chime();
+            setTimeout(() => { if (cur === N + 1) { paintList(); open(N + 1); } }, reduce ? 300 : 1600);
+          } else {
+            fails++; hiss(0.2, 0.04); stat.className = "vstat bad";
+            const done = Object.keys(REPAIRS).filter((k) => repaired[k]).length;
+            stat.textContent = "VOICEPRINT MISMATCH" + (fails >= 2 ? ` // SECTORS REBUILT ON THIS TERMINAL: ${done}/4 // THE WORDS LIVE IN SK-022 · SK-040 · SK-071 · SK-077` : "");
+            input.select();
+          }
+        };
+        btn.onclick = speak;
+        input.addEventListener("keydown", (e) => { e.stopPropagation(); if (e.key === "Enter") speak(); });
+        setTimeout(() => input.focus(), 60);
+      }
     }
 
     /* ---------------- wiring ---------------- */
