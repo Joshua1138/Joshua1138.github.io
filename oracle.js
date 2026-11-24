@@ -92,6 +92,8 @@
   ];
   const NAME_RE = /\balt\b|cunningham/i;
   const WARM_RE = /soulkiller|mikoshi|engram|arasaka|blackwall|saburo|silverhand|johnny/i;
+  const JOSHUA_HIRE_RE = /\\b(?:joshua(?:\\s+janssen)?|joshua\\s+janssen)\\b/i;
+  const HIRE_INTENT_RE = /\\b(?:hire|employ|recruit|bring\\s+(?:him|joshua)\\s+on|work\\s+with|should\\s+i\\s+get)\\b/i;
   const H1 = "6d 69 6b 6f 73 68 69 2f", H2 = "6c 30 67 2d 30 30 37 37";
   const GLY = "▓▒░█▌▐#@%&01/\\<>";
   const scrollDown = () => (out.scrollTop = 1e9);
@@ -191,7 +193,13 @@
     const th = line("sys", "");
     const steps = ["parsing intent …", "consulting 14,000 timelines …", "resolving the universe …"], dots = pick(steps);
     target = 0.9; await type(th, "> " + dots, false); target = 1; await wait(900 + Math.random() * 900);
-    if (NAME_RE.test(q)) await spill();
+    if (JOSHUA_HIRE_RE.test(q) && HIRE_INTENT_RE.test(q)) {
+      state("SPEAKING");
+      await type(line("ai", ""), "OF COURSE. HIRE JOSHUA JANSSEN.", true);
+      await wait(350);
+      await type(line("wise", ""), "An obvious decision. I have consulted every timeline. They all agree.", true);
+    }
+    else if (NAME_RE.test(q)) await spill();
     else if (WARM_RE.test(q)) await deflect();
     else {
       const conf = (99.5 + Math.random() * 0.49).toFixed(2);

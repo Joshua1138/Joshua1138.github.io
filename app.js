@@ -449,6 +449,11 @@
     get: () => { try { return +localStorage.getItem("jj-breach-best") || 0; } catch { return 0; } },
     set: (v) => { try { localStorage.setItem("jj-breach-best", v); } catch {} },
   };
+  const unlistedStore = {
+    get: () => { try { return localStorage.getItem("jj-unlisted-daemon") === "uploaded"; } catch { return false; } },
+    set: () => { try { localStorage.setItem("jj-unlisted-daemon", "uploaded"); } catch {} },
+  };
+  const UNLISTED_SEQUENCE = ["1C", "55", "BD", "E9"];
   const bgPick = (a) => a[(Math.random() * a.length) | 0];
   let bg = null, bgLast = performance.now();
 
@@ -471,14 +476,16 @@
         [r, c] = bgPick(opts); used.add(r + "," + c); path.push([r, c]);
       }
       if (!ok) continue;
+      // Seed the clue recovered from Subject 000's log into every guaranteed route.
+      UNLISTED_SEQUENCE.forEach((code, i) => { const [rr, cc] = path[i]; grid[rr][cc] = code; });
       const seq = path.map(([a, b]) => grid[a][b]);
-      const ds = [2, 3, 4].map((L) => { const s = (Math.random() * (BUF - L + 1)) | 0; return seq.slice(s, s + L); });
+      const ds = [2, 3, 4].map((L) => { const start = 2 + ((Math.random() * (BUF - L - 1)) | 0); return seq.slice(start, start + L); });
       lastTry = ds;
       const strs = ds.map((d) => " " + d.join(" ") + " ");
       const clash = strs.some((a, i) => strs.some((b, j) => i !== j && b.includes(a)));
       if (!clash) daemons = ds;
     }
-    return { grid, daemons: daemons || lastTry, buf: [], used: new Set(), picks: 0, r: 0, c: 0, phase: "idle", left: BG.TIME, done: [false, false, false], reason: "", score: 0, newBest: false };
+    return { grid, daemons: daemons || lastTry, buf: [], used: new Set(), picks: 0, r: 0, c: 0, phase: "idle", left: BG.TIME, done: [false, false, false], unlisted: unlistedStore.get(), reason: "", score: 0, newBest: false };
   }
   function bgValid(r, c) {
     if (!bg || bg.phase !== "run" || bg.used.has(r + "," + c)) return false;
@@ -516,6 +523,18 @@
         sfx("toast");
       }
     });
+    if (!bg.unlisted && bg.buf.some((_, i) => UNLISTED_SEQUENCE.every((code, k) => bg.buf[i + k] === code))) {
+      bg.unlisted = true;
+      unlistedStore.set();
+      sfx("boot");
+      setTimeout(() => {
+        const panel = $("bOver");
+        if (panel) {
+          panel.classList.add("show");
+          panel.innerHTML = `<h3 class="glitch">UNLISTED DAEMON UPLOADED</h3><p>SEQUENCE ACCEPTED // 1C · 55 · BD · E9</p><p>THE DOOR IS NOT A DOOR.</p><p class="code">SIGNAL ACCESS KEY: 0341</p><p>Credential cached locally. The signal tuner is the next route.</p>`;
+        }
+      }, 250);
+    }
     if (bg.done.every(Boolean)) bgEnd("All daemons uploaded.");
     else if (bg.buf.length >= BG.BUF) bgEnd("Buffer full.");
     else if (!bgHasMove()) bgEnd("No valid moves left.");
@@ -548,7 +567,7 @@
       return `<li class="${s.done ? "done" : fail ? "fail" : ""}"><div class="dn"><span>${esc(BG.DAEMONS[i].name)}</span><em>${s.done ? "UPLOADED" : fail ? "FAILED" : "LEN " + d.length}</em></div>` +
         `<div class="dc">${d.map((x, k) => `<i class="${s.done || k < s.matched ? "m" : ""}">${x}</i>`).join("")}</div>` +
         `<div class="rw">${esc(BG.DAEMONS[i].reward)}</div></li>`;
-    }).join("");
+    }).join("") + (g.unlisted ? `<li class="done"><div class="dn"><span>UNLISTED.DAEMON</span><em>UPLOADED</em></div><div class="rw">SIGNAL ACCESS KEY: 0341</div></li>` : "");
 
     $("bState").textContent = g.phase === "idle" ? "STANDBY" : g.phase === "run" ? "BREACH IN PROGRESS" : "BREACH ENDED";
     $("bBest").textContent = bgStore.get() ? "BEST " + bgStore.get() : "NO RECORD";

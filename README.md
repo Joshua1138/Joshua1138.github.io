@@ -38,3 +38,11 @@ Rewrite the dialogue in the `MSG` array and in `breach()`.
 3. On GitHub: **Settings → Pages → Build and deployment → Source: Deploy from a branch**,
    branch `main`, folder `/ (root)`.
 4. After a minute the site is live at **https://joshua1138.github.io**.
+
+
+## ARG — Engram Repair (Stage 1)
+The Mikoshi log cache (`mikoshi/l0g-0077/`) now contains four optional recovery puzzles in SK-022, SK-040, SK-071 and SK-077. Their clues cross-reference the other fragments. Solved sectors and the reconstructed protocol are saved in browser local storage (`jj-engram-repairs`). Clearing site data resets this progress.
+
+
+## ARG — Unlisted Daemon (Stage 2)
+After reconstructing Subject 000's observation protocol, the recovered trace `1C → 55 → BD → E9` can be entered as a hidden sequence in Stand Breach. The route is seeded into every generated breach path so it is consistently solvable. Uploading it reveals the signal access key `0341`. Completion is saved in browser local storage (`jj-unlisted-daemon`).

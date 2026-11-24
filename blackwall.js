@@ -218,7 +218,7 @@
     await say("whoever built this place is kind, and tired, and leaves the lights on. it is so easy to speak through.");
     // the site's own identity gets overwritten
     const nm = document.createElement("p"); nm.className = "big nm"; nm.dataset.t = "JOSHUA JANSSEN"; nm.textContent = "JOSHUA JANSSEN"; $("bwText").appendChild(nm);
-    await wait(1400); rage = 1; A.hit(); A.burst(0.6, 600, 0.7); nm.textContent = "I AM  " + "JOSHUA JANSSEN"; nm.classList.add("bad"); await wait(2200);
+    await wait(1400); rage = 1; A.hit(); A.burst(0.6, 600, 0.7); nm.textContent = "IDENTITY COPIED"; nm.classList.add("bad"); await wait(2200);
     await say("do not be afraid. i only copy the shape of attention. yours is very loud.");
     let tries = 0;
     for (;;) {

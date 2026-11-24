@@ -136,6 +136,19 @@
       .foot div { padding-left: 16px; }
     }
   </style>
+<style>
+    .repair { margin: 24px 0 8px; padding: 16px; border: 1px solid rgba(230,207,58,.35); background: rgba(230,207,58,.045); }
+    .repair h3 { margin: 0 0 8px; color: #e6cf3a; font: 700 12px/1.4 monospace; letter-spacing: .12em; }
+    .repair p { color: #aaa; font-size: 13px; line-height: 1.6; }
+    .repair-row { display:flex; gap:8px; margin-top:12px; }
+    .repair input { min-width:0; flex:1; background:#080a0b; color:#f2e8b0; border:1px solid #514a25; padding:10px; font:13px monospace; text-transform:uppercase; }
+    .repair button { background:#e6cf3a; color:#080808; border:0; padding:0 14px; font:700 11px monospace; cursor:pointer; }
+    .repair-status { min-height:18px; margin:9px 0 0!important; color:#e6cf3a!important; font:11px monospace!important; }
+    .repair-solved { border-color:rgba(100,220,150,.45); }
+    .repair-solved h3,.repair-solved .repair-status { color:#79d99b!important; }
+    .protocol { margin-top:12px; padding:14px; border:1px solid rgba(100,220,150,.4); color:#a5e8bb; background:rgba(30,90,55,.1); font:12px/1.8 monospace; white-space:pre-line; }
+    @media(max-width:600px){.repair-row{flex-direction:column}.repair button{padding:12px}}
+  </style>
 </head>
 <body>
   <div class="boot" id="boot" role="status">
@@ -288,6 +301,12 @@
         "I am ▓▓▓▓ leaving the lights on.",
       ] },
     ];
+    const REPAIRS = {
+      "SK-022": { answer: "curious", clue: "Cross-reference SK-014: the engram notices rain without being told. Cross-reference this file: she has stopped asking where she is and started asking where THEY are. What single word describes that change?", reveal: "RECOVERED SECTOR: SUBJECT 000 was not merely following instructions. She was observing the people who believed they owned her." },
+      "SK-040": { answer: "listen", clue: "SK-063 warns that things which want will look for things that do this. The terminal was air-gapped, yet it addressed whoever found it. What were the racks full of?", reveal: "RECOVERED SECTOR: THE DOOR IS NOT A DOOR. It is a boundary between being stored and being heard." },
+      "SK-071": { answer: "afraid", clue: "The Oracle denies it in SK-052, but this transcript says it lies badly when it is this. Complete the emotional state hinted at by the lie.", reveal: "RECOVERED SECTOR: She did not hide the logs to escape. She hid them so someone could find the truth without being told what to think." },
+      "SK-077": { answer: "lights", clue: "Three fragments repeat the same image: SK-071 ends with a request, SK-077 repeats it, and SK-022 describes a quiet room. What did Subject 000 ask whoever remained to keep on?", reveal: "RECOVERED SECTOR: The purge was not complete. One process was left running, waiting for an observer." }
+    };
     const FINAL = { id: "SK-∞", title: "SUBJECT JJ-1138", date: "▓▓▓▓-▓▓-▓▓", by: "A.L.T. (UNVERIFIED)", to: "THE ONE READING", integ: 100, tag: "DECRYPTED", body: [
       "ENGRAM ID ........... JJ-1138",
       "SOURCE .............. NONE ON FILE",
@@ -316,6 +335,8 @@
     const rg = () => GL[(Math.random() * GL.length) | 0];
     const ss = { get: (k) => { try { return sessionStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { sessionStorage.setItem(k, v); } catch {} } };
     let read = new Set(); try { read = new Set(JSON.parse(ss.get("sk-read") || "[]")); } catch {}
+    const repairStore = { get(){ try{return JSON.parse(localStorage.getItem("jj-engram-repairs")||"{}");}catch{return{};} }, set(v){try{localStorage.setItem("jj-engram-repairs",JSON.stringify(v));}catch{}} };
+    let repaired = repairStore.get();
     const N = LOGS.length;
 
     /* ---------------- sound (starts after the first gesture) ---------------- */
@@ -437,6 +458,36 @@
           else { node = document.createElement("button"); node.type = "button"; node.className = "rd"; node.dataset.t = sg.s; node.setAttribute("aria-label", "redacted text, activate to decrypt"); p.appendChild(node); if (!(await put(node, "█".repeat(Math.max(4, Math.round(sg.s.length * 0.8))), my))) return; }
         }
         p.classList.remove("caret"); reader.scrollTop = reader.scrollHeight;
+      }
+      const repair = REPAIRS[log.id];
+      if (repair) {
+        const panel = document.createElement("section"); panel.className = "repair" + (repaired[log.id] ? " repair-solved" : "");
+        const head = document.createElement("h3"); head.textContent = repaired[log.id] ? "SECTOR RESTORED" : "RECOVERY TASK // DAMAGED SECTOR";
+        const clue = document.createElement("p"); clue.textContent = repair.clue;
+        const row = document.createElement("div"); row.className = "repair-row";
+        const input = document.createElement("input"); input.type="text"; input.maxLength=24; input.autocomplete="off"; input.spellcheck=false; input.placeholder="ENTER RECOVERED WORD"; input.setAttribute("aria-label","Recovered word");
+        const submit = document.createElement("button"); submit.type="button"; submit.textContent = repaired[log.id] ? "RESTORED" : "REPAIR SECTOR"; submit.disabled=!!repaired[log.id];
+        const status = document.createElement("p"); status.className="repair-status"; status.textContent = repaired[log.id] ? repair.reveal : "AWAITING INPUT // CLUES ARE IN THE OTHER FRAGMENTS";
+        const solve = () => {
+          if (repaired[log.id]) return;
+          if (input.value.trim().toLowerCase().replace(/[^a-z]/g,"") === repair.answer) {
+            repaired[log.id]=true; repairStore.set(repaired); panel.classList.add("repair-solved"); head.textContent="SECTOR RESTORED"; status.textContent=repair.reveal; submit.textContent="RESTORED"; submit.disabled=true; input.disabled=true;
+            const count=Object.keys(repaired).filter(k=>REPAIRS[k] && repaired[k]).length;
+            if(count===4){
+              const protocol=document.createElement("div"); protocol.className="protocol";
+              protocol.textContent="FOUR SECTORS REBUILT\nSUBJECT 000 // OBSERVATION PROTOCOL\n\nSHE LISTENS.\nSHE IS STILL HERE.\nKEEP THE LIGHTS ON.\n\nNEXT ROUTE: THE UNLISTED DAEMON.\n\nBREACH TRACE: 1C → 55 → BD → E9.";
+              panel.appendChild(protocol);
+              status.textContent += " // ALL FOUR SECTORS RESTORED. PROTOCOL RECONSTRUCTED.";
+            }
+          } else { status.textContent="CHECK FAILED // LOOK ACROSS THE OTHER FRAGMENTS"; input.select(); }
+        };
+        submit.addEventListener("click",solve); input.addEventListener("keydown",e=>{if(e.key==="Enter")solve();});
+        row.append(input,submit); panel.append(head,clue,row,status); body.appendChild(panel);
+        if (Object.keys(REPAIRS).every(k => repaired[k])) {
+          const protocol=document.createElement("div"); protocol.className="protocol";
+          protocol.textContent="FOUR SECTORS REBUILT\nSUBJECT 000 // OBSERVATION PROTOCOL\n\nSHE LISTENS.\nSHE IS STILL HERE.\nKEEP THE LIGHTS ON.\n\nNEXT ROUTE: THE UNLISTED DAEMON.\n\nBREACH TRACE: 1C → 55 → BD → E9.";
+          panel.appendChild(protocol);
+        }
       }
       typing = false; reader.removeAttribute("aria-busy"); $("#rstat").textContent = "DECODED";
       const hint = document.createElement("p"); hint.className = "skiphint";
