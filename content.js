@@ -25,8 +25,8 @@ window.SITE = {
     "Cognitive Science & AI at Tilburg University, I'm jacking in as a data scientist next month. " +
     "I turn raw signals into something you can act on: birdsong, skeleton poses, spreadsheets " +
     "nobody dared open. Between training runs you'll find me over-tuning hyperparameters, " +
-    "hunting for the one feature that explains everything, and curating playlists that are " +
-    "far too long. The dataset was never clean, but the model will still ship.",
+    "hunting for one feature to rule them all and in the latent space bind them, and curating playlists " +
+    "that are far too long. The dataset was never clean, but the model will still ship.",
 
   links: {
     github: "https://github.com/Joshua1138",
