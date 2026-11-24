@@ -526,12 +526,13 @@
     if (!bg.unlisted && bg.buf.some((_, i) => UNLISTED_SEQUENCE.every((code, k) => bg.buf[i + k] === code))) {
       bg.unlisted = true;
       unlistedStore.set();
+      if (window.JJ_SIGNAL) window.JJ_SIGNAL.arm(true);
       sfx("boot");
       setTimeout(() => {
         const panel = $("bOver");
         if (panel) {
           panel.classList.add("show");
-          panel.innerHTML = `<h3 class="glitch">UNLISTED DAEMON UPLOADED</h3><p>SEQUENCE ACCEPTED // 1C · 55 · BD · E9</p><p>THE DOOR IS NOT A DOOR.</p><p class="code">SIGNAL ACCESS KEY: 0341</p><p>Credential cached locally. The signal tuner is the next route.</p>`;
+          panel.innerHTML = `<h3 class="glitch">UNLISTED DAEMON UPLOADED</h3><p>SEQUENCE ACCEPTED // 1C · 55 · BD · E9</p><p>THE DOOR IS NOT A DOOR.</p><p class="code">SIGNAL ACCESS KEY: 0341</p><p>Credential cached locally. A new <b>▌TUNE</b> control has appeared in the top bar.</p>`;
         }
       }, 250);
     }

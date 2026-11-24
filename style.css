@@ -490,3 +490,45 @@ body.infected .oracle { --g: #b3121f; }
 /* mobile: let the Oracle panel shrink to the screen instead of the canvas forcing it wider */
 .or-grid > * { min-width: 0; }
 @media (max-width: 800px) { .or-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---- ARG stage 3: signal tuner ---- */
+.tn { position: fixed; inset: 0; z-index: 110; display: grid; place-items: center; padding: 16px; background: rgba(3,4,8,.82); backdrop-filter: blur(3px); opacity: 0; transition: opacity .25s; }
+.tn[hidden] { display: none; } .tn.on { opacity: 1; }
+.tn-box { width: min(760px, 100%); max-height: 100%; overflow: auto; background: rgba(8,10,16,.97); border: 1px solid var(--cyan-dim); padding: 16px 20px 20px; position: relative;
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px)); box-shadow: inset 0 0 60px rgba(78,242,255,.05); }
+.tn-box::after { content: ""; position: absolute; left: 0; bottom: 0; width: 80px; height: 3px; background: var(--cyan); }
+.tn-h { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.tn-h small { font-family: var(--mono); font-size: 11px; letter-spacing: 3px; color: var(--muted); }
+.tn-h h2 { margin: 2px 0 0; font: 700 clamp(22px, 4vw, 30px)/1 var(--ui); letter-spacing: 6px; color: var(--cyan); }
+.tn-gate { text-align: center; padding: 18px 4px 10px; font-family: var(--mono); }
+.tn-gate p { margin: 0 0 14px; letter-spacing: 2px; color: var(--muted); font-size: 13px; }
+.tn-gate label { display: block; font-size: 11px; letter-spacing: 4px; color: var(--cyan); margin-bottom: 8px; }
+.tn-keyrow { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.tn-keyrow input { width: 9ch; background: #000; border: 1px solid var(--cyan-dim); color: #fff; font: 24px var(--mono); letter-spacing: .4em; text-align: center; padding: 8px 10px 8px calc(10px + .4em); }
+.tn-keyrow input:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.tn-keyrow .mini { padding: 8px 14px; letter-spacing: 2px; }
+.tn-gate .tn-msg { min-height: 1.4em; margin: 14px 0 0; letter-spacing: 3px; } .tn-msg.ok { color: var(--ok); } .tn-msg.bad { color: var(--red); }
+.tn-gate.shake { animation: tnshake .35s; } @keyframes tnshake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+.tn-scopewrap { position: relative; border: 1px solid var(--cyan-dim); background: #02070a; }
+.tn-scopewrap canvas { display: block; width: 100%; }
+.tn-legend { position: absolute; left: 10px; top: 6px; display: flex; gap: 14px; font: 11px var(--mono); letter-spacing: 2px; pointer-events: none; }
+.tn-legend .k1 { color: var(--red); } .tn-legend .k2 { color: var(--cyan); }
+.tn-lock { margin: 12px 0 4px; }
+.tn-lockbar { height: 8px; border: 1px solid var(--cyan-dim); padding: 1px; } .tn-lockbar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--red), var(--yellow), var(--ok)); transition: width .12s; }
+.tn-lockrow { display: flex; justify-content: space-between; gap: 10px; margin-top: 6px; font: 12px var(--mono); letter-spacing: 3px; color: var(--muted); }
+.tn-lockrow .good { color: var(--ok); }
+.tn-ctl { display: grid; gap: 8px; margin: 12px 0 6px; }
+.tn-row { display: grid; grid-template-columns: 11ch minmax(0, 1fr) 6ch; gap: 12px; align-items: center; font: 12px var(--mono); letter-spacing: 2px; }
+.tn-row label { color: var(--cyan); } .tn-row output { text-align: right; color: var(--text); font-size: 14px; }
+.tn-row input[type=range] { width: 100%; accent-color: var(--cyan); min-height: 28px; }
+.tn-row input:disabled { opacity: .45; }
+.tn-hint { font: 12px/1.6 var(--mono); color: var(--muted); margin: 8px 0 10px; }
+.tn-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+.tn-tx { margin: 14px 0 0; font: 13px/1.7 var(--mono); color: #bfe9ee; white-space: pre-wrap; overflow-wrap: anywhere; min-height: 0; cursor: pointer; }
+.tn-tx:empty { display: none; }
+.tn-tx p { margin: 0 0 8px; }
+.tn-tx .hd { color: var(--yellow); letter-spacing: 2px; font-size: 12px; }
+.tn-tx .rec { color: var(--ok); border: 1px solid rgba(61,255,162,.4); background: rgba(61,255,162,.06); padding: 8px 12px; letter-spacing: 2px; margin-top: 12px; }
+.tn-tx .nx { color: var(--red); letter-spacing: 3px; }
+@media (max-width: 560px) { .tn-box { padding: 12px 12px 16px; } .tn-row { grid-template-columns: 9ch minmax(0, 1fr) 5.5ch; gap: 8px; font-size: 11px; letter-spacing: 1px; } }
+@media (prefers-reduced-motion: reduce) { .tn, .tn-gate.shake { transition: none; animation: none; } }

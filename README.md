@@ -46,3 +46,12 @@ The Mikoshi log cache (`mikoshi/l0g-0077/`) now contains four optional recovery 
 
 ## ARG — Unlisted Daemon (Stage 2)
 After reconstructing Subject 000's observation protocol, the recovered trace `1C → 55 → BD → E9` can be entered as a hidden sequence in Stand Breach. The route is seeded into every generated breach path so it is consistently solvable. Uploading it reveals the signal access key `0341`. Completion is saved in browser local storage (`jj-unlisted-daemon`).
+
+
+## ARG — Tune the Signal (Stage 3)
+Uploading the unlisted daemon adds a **▌TUNE** button to the top bar (it also reappears on later visits). It opens `signal.js`, an oscilloscope-style tuner:
+1. Enter the signal access key `0341`. The key is also the carrier frequency (3.41).
+2. Match the red incoming trace with frequency, amplitude and phase sliders (target: 3.41 / 7.0 / 138°) and hold the lock for about 1.2 s.
+3. A transmission from Subject 000 is decoded. It points at the Mikoshi Vault (Stage 4), whose combination will reuse the three locked values.
+The optional MONITOR button plays the two traces as tones in each ear; the beating stops when they match. Progress is saved in local storage (`jj-signal-tuner`).
+Testing in the console: `JJ_SIGNAL.open()`, `JJ_SIGNAL.solve()`, `JJ_SIGNAL.reset()`.
