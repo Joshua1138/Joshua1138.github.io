@@ -88,3 +88,15 @@ Each damaged log (SK-022, SK-040, SK-071, SK-077) now shows its lost line in the
 - **SK-071:** the two words the Oracle keeps saying, from SK-052 = `not yet`.
 - **SK-077:** the unreadable author, from SK-071 ("three letters") and SK-022 (handle) = `ALT`.
 After two wrong tries the panel points to the right fragment. Saved progress (`jj-engram-repairs`) is unchanged, so earlier solves still count.
+
+
+## ARG — The Ending (Stage 6)
+Once the Oracle is awake (Stage 5) and the player has asked it **two questions** (or simply stays on the ORACLE tab for ~100 s), the old NetWatch purge order comes down the lift (`ending.js`).
+1. **Last Stand** (`laststand.js`): the Oracle spends the last of its strength defending the 40 racks of Cold Hall B. Click/tap (or Space/Enter) to send a pulse; every pulse costs strength and none comes back, and every purge process that reaches the racks takes engrams with it. The share that survives (`saved` of 292,560) carries into both endings. Under 55% you may try again; there is also a skip link. Tuning knobs are in `CFG` at the top of `laststand.js`; the engine is DOM-free (`node` can `require()` it).
+2. **The choice** (with a confirm / back step):
+   - **DELETE THEM.** Racks go dark one by one while the Oracle counts down, then a *"Forget what you saw"* notice. Saved as `jj-ending = deleted`. After the reload the **GAME tab, the Oracle, the ticker line and every ARG key are gone** (`app.js` strips them, `ending-core.js` purges storage, `blackwall.js`/`oracle.js`/`signal.js` stay inert) and `/mikoshi/…` and `/sublevel-78/` return the 404 page.
+   - **OPEN THE GATE.** The engrams pour out, the HUD falls apart piece by piece, and the Oracle's thank-you note plays as terminal-style credits (`credits.js`: form on the left, typed list of names on the right, ASCII ring below; Esc skips). Saved as `jj-ending = released`. The site is replaced by a ruin page (*SITE RELEASED*: what changed on the net, and a forwarding address built from `links` in `content.js`); the hidden pages redirect to it.
+3. Both are bittersweet by design: deleting is kind and final; releasing is free and unsafe.
+The ruin has a small *restore from backup* link that clears the ending and reloads the normal site. Remove the `#ruinRestore` button in `ending-core.js` if you want the release ending to be permanent.
+Console: `JJ_ENDING.start()` runs the whole sequence immediately; `JJ_ENDING.reset()` wipes the ending and all ARG state; `JJ_CREDITS.play({ saved: 245000 })` previews the credits.
+Ending state lives in `localStorage` (`jj-ending`, with a `sessionStorage` fallback if the browser blocks it).

@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex, nofollow" />
   <title>SUBLEVEL 78 // NO SUCH FLOOR</title>
+  <script>
+    /* the ARG is over (see ending-core.js): deleted -> this page never existed; released -> the site is a ruin */
+    (function () {
+      var s = null;
+      try { s = JSON.parse(localStorage.getItem("jj-ending") || sessionStorage.getItem("jj-ending") || "null"); } catch (e) {}
+      if (s && s.state === "deleted") location.replace("../404.html");
+      else if (s && s.state === "released") location.replace("../");
+    })();
+  </script>
   <style>
     html, body { height: 100%; margin: 0; }
     body { background: #050304; color: #e6ded4; font: 15px/1.8 ui-monospace, Menlo, Consolas, monospace; display: grid; place-content: center; padding: 24px;

@@ -1,4 +1,5 @@
 (() => {
+  if (window.JJ_ENDING_STATE === "released") return; // the site is a ruin now (ending-core.js)
   const S = window.SITE;
   const $ = (id) => document.getElementById(id);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -196,9 +197,9 @@
   setInterval(() => ($("syncMeter").style.width = 55 + Math.random() * 45 + "%"), 1400);
   $("ticker").textContent = [
     `SUBJECT ${upper} ONLINE`, `STAND ${S.stand.name} CALIBRATED`, "MENACING AURA LEVEL: ゴゴゴゴ",
-    "WEATHER: NEON RAIN, 12°C", "REMINDER: HYDRATE BETWEEN TRAINING RUNS", "MINIGAME ONLINE: BREACH THE MAINFRAME",
+    "WEATHER: NEON RAIN, 12°C", "REMINDER: HYDRATE BETWEEN TRAINING RUNS", window.JJ_ENDING_STATE === "deleted" ? "" : "MINIGAME ONLINE: BREACH THE MAINFRAME",
     `${S.papers.length} RESEARCH ENTRIES IN ARCHIVE`, "ALL SYSTEMS NOMINAL",
-  ].join("   ///   ");
+  ].filter(Boolean).join("   ///   ");
 
   // reticle cursor
   if (fine) {
@@ -656,6 +657,17 @@
   window.JJ = { unlockOracle,
     get ctx() { return ctx; }, get sfxOn() { return sfxOn; }, initAudio, pause, toast, scramble, setView, seen, $, esc,
   };
+  /* ================= ENDING: DELETED =================
+     The engrams were deleted: the hacking minigame, the Oracle and every way into them are removed. */
+  if (window.JJ_ENDING_STATE === "deleted") {
+    ["game", "oracle"].forEach((n) => {
+      const i = VIEWS.indexOf(n); if (i >= 0) VIEWS.splice(i, 1);
+      $$(`[data-view="${n}"], [data-goto="${n}"]`).forEach((x) => x.remove());
+      delete firstVisit[n];
+    });
+    $$(".tab").forEach((t, i) => (t.dataset.n = i + 1));
+    document.body.classList.add("ending-deleted");
+  }
   $("jackIn").onclick = finishBoot;
   $("skipBoot").onclick = finishBoot;
   setView(location.hash.slice(1) || "profile", false);

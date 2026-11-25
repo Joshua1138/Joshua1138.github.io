@@ -9,6 +9,7 @@
    Console helpers:  JJ_SIGNAL.open()  .arm()  .solve()  .reset()
    ========================================================================== */
 (() => {
+  if (window.JJ_ENDING_STATE) return; // the ARG is over (ending-core.js)
   const J = () => window.JJ, $ = (id) => document.getElementById(id);
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;

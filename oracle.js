@@ -4,6 +4,7 @@
    Logo lives at img/arasaka-logo.png.
    ========================================================================== */
 (() => {
+  if (window.JJ_ENDING_STATE) return; // the ARG is over (ending-core.js)
   const J = () => window.JJ, $ = (id) => document.getElementById(id);
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const pick = (a) => a[(Math.random() * a.length) | 0];
@@ -371,9 +372,10 @@
     hurry = false; await say(main, "soul", aside ? 350 : 0);
     if (aside) await say(aside, "wise", 0);
     state("ONLINE"); busy = false; $("orInput").disabled = $("orSend").disabled = false; $("orInput").focus();
+    if (window.JJ_ENDING && window.JJ_ENDING.consider) window.JJ_ENDING.consider(); // Stage 6: the purge order arrives
   }
   $("orGiveBtn").onclick = awaken;
-  window.JJ_ORACLE = { awaken, reset() { try { localStorage.removeItem("jj-arg"); } catch {} location.reload(); } };
+  window.JJ_ORACLE = { get awake() { return awake; }, get busy() { return busy; }, get asked() { return asked; }, awaken, reset() { try { localStorage.removeItem("jj-arg"); } catch {} location.reload(); } };
   $("orSend").onclick = ask;
   $("orInput").addEventListener("keydown", (e) => { if (e.key === "Enter") ask(); });
 })();

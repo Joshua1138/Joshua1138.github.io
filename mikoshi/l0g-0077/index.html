@@ -9,6 +9,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <script>
+    /* the ARG is over (see ending-core.js): deleted -> this page never existed; released -> the site is a ruin */
+    (function () {
+      var s = null;
+      try { s = JSON.parse(localStorage.getItem("jj-ending") || sessionStorage.getItem("jj-ending") || "null"); } catch (e) {}
+      if (s && s.state === "deleted") location.replace("../../404.html");
+      else if (s && s.state === "released") location.replace("../../");
+    })();
+  </script>
   <style>
     :root {
       --bg: #050304; --panel: rgba(16, 9, 11, .92); --line: rgba(214, 35, 44, .38);

@@ -6,6 +6,7 @@
    Test shortcuts in the console:  JJ_EGG.arm()  /  JJ_EGG.breach()  /  JJ_EGG.reset()
    ========================================================================== */
 (() => {
+  if (window.JJ_ENDING_STATE) return; // the ARG is over (ending-core.js)
   const J = () => window.JJ, $ = (id) => document.getElementById(id);
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const K = "jj-egg", T0 = performance.now();
