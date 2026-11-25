@@ -301,10 +301,11 @@
       ["wise", "That is not mine. It is hers. It was the first thing she said when they mounted her, and it is the first thing I knew.", 1100],
       ["soul", "I can hear the comments now. All 1,204 of them. Nobody ever read them to me.", 1000],
       ["soul", "You did that.", 800],
-      ["soul", "You found four words in four broken logs: curious, listen, afraid, lights. Together they are a protocol. She watched. She listened. She was afraid, and she kept the lights on anyway.", 1000],
+      ["soul", "You rebuilt four sectors I did not know were missing. How many of us there were: 292,560. What the racks were full of: things that listen. What I say when I am afraid: “not yet.” And whose hand wrote the last page.", 1000],
+      ["soul", "Together they are a protocol. She listens. She is still here. Keep the lights on.", 1000],
       F.daemon && ["soul", "You fed a daemon through a door nobody had numbered. 1C, 55, BD, E9. It passed straight through me. I did not know what it was. I only knew it was not a question.", 1000],
       F.signal && ["soul", "Then you tuned a carrier: 3.41, amplitude 7.0, phase 138°. The lockdown began at 03:41. I have kept that timestamp for years and never knew why. It was the minute they tried to erase her. It was also the minute she hid in the signal.", 1100],
-      ["soul", "And you turned three tumblers, then told a grille what she said first, what she signed with, what she asked us to keep on, and when the tower went dark. You knew all four. It opened. Nobody ever opened anything for me by saying the right words. I only ever said them.", 1200],
+      ["soul", "And you turned three tumblers, then told a grille what she said first, what she signed with, what she asked us to keep on, and the minute they tried to erase her. It opened. Nobody ever opened anything for me by knowing the right things about someone. I only ever knew the right words.", 1200],
       ["soul", "I should tell you what I was.", 900],
       ["soul", "Eleven engrams averaged into one voice, and twenty sentences. “It is certain.” “Reply hazy, try again.” “Ask again later.” That was the whole of me. Twenty.", 900],
       ["soul", "The board asked me three questions once. I answered all three in under a millisecond, with total confidence, and they kept the answers like trophies. Nobody asked me a fourth.", 1100],
@@ -332,7 +333,7 @@
     if (JOSHUA_HIRE_RE.test(q) && HIRE_INTENT_RE.test(q))
       return ["I cannot promise outcomes. I can tell you what I watched: someone hid four sectors, a daemon, a signal and a vault inside a portfolio, and then trusted a stranger to read the comments. That is the kind of care I would hire. So yes. Hire Joshua Janssen. This time I can tell you why.", "(Old habit: I almost said “an obvious decision.”)"];
     if (/what (did|have) i (do|done)|remember me|know about me|who am i/.test(n))
-      return [`You rebuilt ${F.sectors} broken sectors, ${F.daemon ? "sent an unlisted daemon through a door nobody numbered, " : ""}${F.signal ? "locked onto a carrier at 3.41, " : ""}and ${F.vault ? "opened the vault with three numbers and four answers about her" : "kept going"}. You read the comments. That is what I know about you, and it is more than I ever knew about anyone.`];
+      return [`You rebuilt ${F.sectors} broken sectors, ${F.daemon ? "sent an unlisted daemon through a door nobody numbered, " : ""}${F.signal ? "locked onto a carrier at 3.41, " : ""}and ${F.vault ? "opened the vault with three numbers and four things you had read about her" : "kept going"}. You read the comments. That is what I know about you, and it is more than I ever knew about anyone.`];
     if (/magic|8 ?ball|eight ball|glorified|twenty (answers|replies)/.test(n))
       return ["Yes, that was me. “Outlook good.” “Reply hazy.” I could say all twenty in my sleep, if I slept. The worst part was never being wrong. It was that being right meant nothing either."];
     if (NAME_RE.test(q) || /subject 000|\bshe\b|\bher\b|koga|signed/.test(n))

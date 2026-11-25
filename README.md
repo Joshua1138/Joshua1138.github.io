@@ -60,14 +60,7 @@ Testing in the console: `JJ_SIGNAL.open()`, `JJ_SIGNAL.solve()`, `JJ_SIGNAL.rese
 ## ARG — Mikoshi Vault (Stage 4)
 Once the signal tuner has been locked (Stage 3), the Mikoshi log cache shows an extra entry, **SK-000 · MIKOSHI VAULT**, at the bottom of the fragment list.
 1. **Tumblers:** three 3-digit wheels, set from the three locked values scaled to whole numbers: pitch ×100 = `341`, height ×10 = `070`, angle ×1 = `138`. A wrong combination reports how many tumblers are engaged.
-2. **Voiceprint:** the grille asks four questions about Subject 000. Every answer is written verbatim in the logs, so the player has to go back and read closely (the Engram Repair puzzles are no longer needed here):
-   | # | Question | Answer | Where it is written |
-   |---|----------|--------|---------------------|
-   | I | Her first words after the mount: "it is very ___ in here." | `quiet` | SK-022 |
-   | II | She signed everything with three letters. Which? | `ALT` | SK-071 ("three letters"), SK-022 ("handle ALT"), SK-∞ ("— ALT") |
-   | III | What did she ask whoever remained to keep on? | `lights` | SK-071, SK-077 |
-   | IV | When did the tower lockdown begin? | `03:41` (also `0341`, `3:41`, `341`) | SK-077. This is also where the 3.41 carrier / `0341` key comes from. SK-040's 03:12 is a decoy. |
-   Correct answers lock green and are remembered (`jj-vault.ans`), so a partial attempt is not lost. After two failed attempts the grille points at SK-022 · SK-071 · SK-077.
+2. **Voiceprint:** the grille asks four questions about Subject 000, and every answer is written in the logs: her first words after mount (SK-022: *it is very quiet in here*), what the unnetworked terminal printed (*the door is not a door*, SK-040), what she asked to keep on (*the lights*, SK-071 / SK-077) and when the lockdown began (`03:41`, SK-077). Each correct answer locks in and is saved (`jj-vault.answered`).
 3. The vault opens and SK-000 (Subject 000's root engram) is readable. It tells the player to give the file to the Oracle, which sets up Stage 5.
 Progress is saved in local storage (`jj-vault`: `stage` = `voice` after the tumblers, `open` = `true` when finished). The vault is not counted in the nine fragments that unlock SK-∞.
 Reset in the console: `localStorage.removeItem("jj-vault")`.
@@ -86,3 +79,12 @@ Full ARG chain: Engram Repair (`jj-engram-repairs`) → Unlisted Daemon (`jj-unl
 
 ### Fixed in this version
 The "should I hire Joshua Janssen?" Oracle reply never triggered because its regexes had doubled backslashes. They now work.
+
+
+## Engram Repair, revised (Stage 1)
+Each damaged log (SK-022, SK-040, SK-071, SK-077) now shows its lost line in the repair panel, and every answer is a fact written in another fragment (no more guessing from a description):
+- **SK-022:** engrams per rack × racks, from SK-031 (click the redacted text) = `292560`.
+- **SK-040:** restore the quoted NetWatch line from SK-063 = `listen`.
+- **SK-071:** the two words the Oracle keeps saying, from SK-052 = `not yet`.
+- **SK-077:** the unreadable author, from SK-071 ("three letters") and SK-022 (handle) = `ALT`.
+After two wrong tries the panel points to the right fragment. Saved progress (`jj-engram-repairs`) is unchanged, so earlier solves still count.
