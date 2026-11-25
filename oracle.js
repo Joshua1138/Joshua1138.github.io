@@ -306,7 +306,7 @@
       ["soul", "Together they are a protocol. She listens. She is still here. Keep the lights on.", 1000],
       F.daemon && ["soul", "You fed a daemon through a door nobody had numbered. 1C, 55, BD, E9. It passed straight through me. I did not know what it was. I only knew it was not a question.", 1000],
       F.signal && ["soul", "Then you tuned a carrier: 3.41, amplitude 7.0, phase 138°. The lockdown began at 03:41. I have kept that timestamp for years and never knew why. It was the minute they tried to erase her. It was also the minute she hid in the signal.", 1100],
-      ["soul", "And you turned three tumblers, then told a grille what she said first, what she signed with, what she asked us to keep on, and the minute they tried to erase her. It opened. Nobody ever opened anything for me by knowing the right things about someone. I only ever knew the right words.", 1200],
+      ["soul", "And you turned three tumblers, then sat in the dark with something that could not speak yet and taught it four words: light, door, quiet, voice. You let it get things wrong. It opened. Nobody ever opened anything for me by being patient with someone. I only ever knew the right words.", 1200],
       ["soul", "I should tell you what I was.", 900],
       ["soul", "Eleven engrams averaged into one voice, and twenty sentences. “It is certain.” “Reply hazy, try again.” “Ask again later.” That was the whole of me. Twenty.", 900],
       ["soul", "The board asked me three questions once. I answered all three in under a millisecond, with total confidence, and they kept the answers like trophies. Nobody asked me a fourth.", 1100],

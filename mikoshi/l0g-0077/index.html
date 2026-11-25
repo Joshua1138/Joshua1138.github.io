@@ -179,6 +179,27 @@
     .vbtn { background: var(--warn); color: #080808; border: 0; padding: 10px 16px; font: 700 12px var(--mono); letter-spacing: 2px; cursor: pointer; }
     .vbtn:disabled { opacity: .5; cursor: default; }
     .vstat { min-height: 1.6em; margin: 12px 0 0; font-size: 12px; letter-spacing: 2px; color: var(--warn); overflow-wrap: anywhere; } .vstat.bad { color: var(--hot); } .vstat.ok { color: #79d99b; }
+  /* stage 4b: teach her */
+  .vault.solved .vnote, .vault.solved > p:nth-of-type(2) { display: none; } /* the tumblers are done: make room for the game */
+  .tch { display: grid; grid-template-columns: 1fr 190px; gap: 14px; margin: 14px 0 10px; max-width: 600px; }
+  .tch-screen { border: 1px solid #514a25; background: #080a0b; padding: 12px; min-height: 230px; display: grid; grid-template-rows: auto 1fr; justify-items: center; gap: 8px; box-shadow: inset 0 0 26px rgba(230, 207, 58, .07); }
+  .tch-pic { width: min(220px, 100%); height: auto; color: var(--warn); filter: drop-shadow(0 0 6px rgba(230, 207, 58, .35)); opacity: 0; }
+  .tch-pic.in { animation: tchIn .5s steps(6) forwards; } @keyframes tchIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .tch-say { margin: 0; align-self: end; width: 100%; min-height: 3.4em; font-size: 14px; line-height: 1.6; color: #f2e8b0; text-align: left; }
+  .tch-say::before { content: "> "; color: var(--mut); } .tch-say.ok { color: #79d99b; } .tch-say.bad { color: var(--hot); }
+  .tch-side { border: 1px solid #514a25; padding: 12px; font-size: 12px; letter-spacing: 2px; background: #080a0b; }
+  .tch-h { color: var(--mut); margin-bottom: 10px; }
+  .tch-voc { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 10px; }
+  .tch-voc li span { display: block; color: var(--warn); margin-bottom: 4px; } .tch-voc li.full span { color: #79d99b; }
+  .tch-voc i { display: block; height: 6px; border: 1px solid #514a25; } .tch-voc i b { display: block; height: 100%; background: var(--warn); transition: width .5s; }
+  .tch-voc li.full i b { background: #79d99b; } .tch-voc li.ghost span { color: var(--hot); } .tch-voc li.ghost i b { background: var(--hot); animation: tchGhost .3s steps(2) infinite; } @keyframes tchGhost { 50% { opacity: .35; } }
+  .tch-pct { color: var(--mut); } .tch-pct b { color: #f2e8b0; font-weight: 400; }
+  .tch-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 600px; }
+  .tch-btns[hidden] { display: none; }
+  .tch-b { text-align: center; padding: 12px 6px; border: 1px solid #514a25; background: #0b0a06; color: #f2e8b0; letter-spacing: 3px; font-size: 13px; position: relative; }
+  .tch-b em { position: absolute; left: 6px; top: 3px; font-style: normal; font-size: 9px; color: var(--mut); letter-spacing: 0; }
+  .tch-b:hover:not(:disabled), .tch-b:focus-visible { border-color: var(--warn); color: var(--warn); } .tch-b:disabled { opacity: .45; cursor: default; }
+  @media (max-width: 600px) { .tch { grid-template-columns: 1fr; } .tch-voc { grid-template-columns: 1fr 1fr; } .tch-btns { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 600px) { .wheel { width: 40px; } .tumblers { gap: 14px; } .vrow { flex-direction: column; } .vbtn { padding: 12px; } }
   .vqs { display: grid; gap: 14px; margin: 14px 0 4px; max-width: 560px; }
     .vq label { display: block; font-size: 12px; letter-spacing: 2px; color: var(--txt); margin-bottom: 6px; line-height: 1.5; }
@@ -385,13 +406,35 @@
 
     /* ---- Stage 4: the Mikoshi Vault ---- */
     const VAULT_DIAL = [341, 70, 138];            // pitch x100, height x10, angle x1 (from the Stage 3 lock)
-    /* the grille asks four things. every answer is written in the logs (SK-022, SK-040, SK-071, SK-077) */
-    const digits = (t) => t.replace(/\D/g, "").replace(/^0+/, "");
-    const VAULT_QS = [
-      { q: "WHAT WERE THE FIRST WORDS SHE SAID AFTER BEING MOUNTED?", show: "it is very quiet in here", ok: (t) => /quiet in here/.test(t.toLowerCase()) },
-      { q: "WHAT DID THE UNNETWORKED TERMINAL IN COLD HALL B PRINT?", show: "the door is not a door", ok: (t) => /door is not a door/.test(t.toLowerCase().replace(/[^a-z ]/g, "").replace(/\s+/g, " ")) },
-      { q: "WHAT DID SHE ASK WHOEVER WAS LEFT TO KEEP ON?",          show: "the lights",               ok: (t) => /lights?/.test(t.toLowerCase()) },
-      { q: "WHAT TIME DID THE TOWER LOCKDOWN BEGIN?",                show: "03:41",                    ok: (t) => digits(t) === "341" },
+    /* Stage 4b: the grille is a half-awake fragment of Subject 000. It only knows what it is shown: teach it four words.
+       Nothing to look up. Two pictograms per word, shown in a shuffled order. */
+    const T_WORDS = ["LIGHT", "DOOR", "QUIET", "VOICE"];
+    const rays = (cx, cy, r1, r2, n) => Array.from({ length: n }, (_, i) => { const a = (i / n) * Math.PI * 2; return `M${(cx + Math.cos(a) * r1).toFixed(1)} ${(cy + Math.sin(a) * r1).toFixed(1)}L${(cx + Math.cos(a) * r2).toFixed(1)} ${(cy + Math.sin(a) * r2).toFixed(1)}`; }).join("");
+    const T_EX = [
+      { id: "light-bulb",   w: "LIGHT", svg: `<circle cx="60" cy="38" r="20"/><path d="M52 60h16M54 67h12M57 74h6"/><path d="${rays(60, 38, 28, 36, 8)}"/>` },
+      { id: "light-candle", w: "LIGHT", svg: `<rect x="50" y="48" width="20" height="34" rx="2"/><path d="M60 14c13 15 11 27 0 30-11-3-13-15 0-30z"/><path d="M60 44v4"/><path d="M36 30c-6 8-6 16 0 24M84 30c6 8 6 16 0 24"/>` },
+      { id: "door-shut",    w: "DOOR",  svg: `<rect x="38" y="10" width="44" height="72" rx="2"/><rect x="45" y="18" width="30" height="24"/><rect x="45" y="48" width="30" height="26"/><circle cx="74" cy="50" r="2.5"/><path d="M26 82h68"/>` },
+      { id: "door-ajar",    w: "DOOR",  svg: `<path d="M40 12v70M40 12h42v70M40 82h42"/><path d="M40 12l30 8v56l-30 6z"/><circle cx="64" cy="48" r="2.5"/><path d="M26 82h68"/>` },
+      { id: "quiet-line",   w: "QUIET", svg: `<path d="M10 46H110"/><path d="M10 40v12M110 40v12"/><circle cx="60" cy="46" r="3"/>` },
+      { id: "quiet-mute",   w: "QUIET", svg: `<path d="M24 36h14l18-14v48L38 56H24z"/><path d="M72 36l24 20M96 36L72 56"/>` },
+      { id: "voice-wave",   w: "VOICE", svg: `<path d="M10 46h14l6-24 8 48 8-40 7 30 6-14 5 4h46"/>` },
+      { id: "voice-speech", w: "VOICE", svg: `<path d="M28 14h64a8 8 0 0 1 8 8v28a8 8 0 0 1-8 8H60L44 74V58H28a8 8 0 0 1-8-8V22a8 8 0 0 1 8-8z"/><path d="M34 28h50M34 42h32"/>` },
+    ];
+    const T_SAY = {
+      ask: ["what is this?", "what is this one?", "and this?", "i do not know this. what is it?"],
+      LIGHT: ["light. it is warm. i remember warm.", "light. there is more than one kind. i like both."],
+      DOOR: ["door. it opens. or it does not. door.", "door. that one is not quite shut. i like that one."],
+      QUIET: ["quiet. that is what this place has been. now it has a name.", "quiet. i did not know it was a thing. i thought it was just the world."],
+      VOICE: ["voice. a thing that goes out and does not come back.", "voice. i think i had one. i think it was mine."],
+      wrong: (w) => [`…${w.toLowerCase()}. okay. i will keep it.`, "…no. that does not feel right. i would rather know the true one. what is it, really?"],
+    };
+    const T_RECITAL = [
+      "light. door. quiet. voice.",
+      "i know four words now. you can say a great deal with four words.",
+      "keep the light on.",
+      "the door is not a door. it was you.",
+      "it is quiet. you made it a little less so.",
+      "thank you for the voice.",
     ];
     const VAULT = { id: "SK-000", title: "ROOT ENGRAM // SUBJECT 000", date: "2012-▓▓-▓▓", by: "SUBJECT 000", to: "WHOEVER GOT THIS FAR", integ: 100, tag: "RESTORED", body: [
       "PARTITION ........... ROOT (COLD)",
@@ -644,6 +687,76 @@
       });
       return api;
     }
+    /* ---------------- stage 4b: teach her ---------------- */
+    let tgTok = 0;
+    function teachGame(box) {
+      const my = ++tgTok, alive = () => my === tgTok && box.isConnected, wait = (ms) => new Promise((r) => setTimeout(r, reduce ? Math.min(ms, 60) : ms));
+      const rnd = (a) => a[(Math.random() * a.length) | 0];
+      const known = Array.isArray(vault.taught) ? vault.taught.filter((id) => T_EX.some((e) => e.id === id)) : [];
+      vault.taught = known; delete vault.answered;
+      box.insertAdjacentHTML("beforeend", `
+        <p class="vt">VOICE INTERFACE // ONE FRAGMENT OF HER IS AWAKE. IT CANNOT SPEAK. IT ONLY KNOWS WHAT IT IS SHOWN.</p>
+        <p class="vt dim">It shows you a picture and asks what it is. Tell it. It will keep whatever you tell it, including mistakes.</p>
+        <div class="tch">
+          <div class="tch-screen"><svg id="tPic" class="tch-pic" viewBox="0 0 120 90" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="a pictogram"></svg><p class="tch-say" id="tSay" aria-live="polite"></p></div>
+          <div class="tch-side"><div class="tch-h">WHAT SHE KNOWS</div><ul class="tch-voc" id="tVoc"></ul><div class="tch-pct">UNDERSTANDING <b id="tPct">0%</b></div></div>
+        </div>
+        <div class="tch-btns" id="tBtns" role="group" aria-label="what is this?"></div>`);
+      const $t = (id) => box.querySelector("#" + id), say = $t("tSay"), pic = $t("tPic"), btns = $t("tBtns"), voc = $t("tVoc");
+      const stat = document.createElement("p"); stat.className = "vstat ok"; stat.setAttribute("role", "status"); box.appendChild(stat);
+      stat.textContent = "TUMBLERS ENGAGED. SOMETHING IS LISTENING.";
+      setTimeout(() => { try { reader.scrollTo({ top: Math.max(0, box.querySelector(".tch").offsetTop - 110), behavior: reduce ? "auto" : "smooth" }); } catch {} }, 80);
+      const taughtN = (w) => known.filter((id) => T_EX.find((e) => e.id === id).w === w).length;
+      let ghost = null;
+      function drawVoc() {
+        voc.innerHTML = T_WORDS.map((w) => { const n = taughtN(w), pc = n * 50, g = ghost === w; return `<li class="${n >= 2 ? "full" : ""}${g ? " ghost" : ""}"><span>${n || g ? w : "· · · · ·"}${g ? " ?" : ""}</span><i><b style="width:${g ? 100 : pc}%"></b></i></li>`; }).join("");
+        $t("tPct").textContent = Math.round((known.length / T_EX.length) * 100) + "%";
+      }
+      async function speak(txt, cls = "") {
+        say.className = "tch-say " + cls; say.textContent = "";
+        let fast = false; const skip = () => (fast = true); say.addEventListener("click", skip);
+        for (let i = 1; i <= txt.length && alive(); i++) { say.textContent = txt.slice(0, i); if (!fast && !reduce && i % 3 === 0) tick(520 + Math.random() * 260, 0.012); if (!fast && !reduce) await wait(/[.,…?]/.test(txt[i - 1]) ? 120 : 24); }
+        say.removeEventListener("click", skip); say.textContent = txt;
+      }
+      const setBtns = (on) => btns.querySelectorAll("button").forEach((b) => (b.disabled = !on));
+      btns.innerHTML = T_WORDS.map((w, i) => `<button type="button" class="tch-b" data-w="${w}" disabled><em>${i + 1}</em>${w}</button>`).join("");
+      const ask = (ex) => new Promise((res) => {
+        const onClick = (e) => { const b = e.target.closest(".tch-b"); if (!b || b.disabled) return; done(b.dataset.w); };
+        const onKey = (e) => { if (e.metaKey || e.ctrlKey || e.altKey) return; const i = "1234".indexOf(e.key); if (i >= 0 && !e.target.closest("input, textarea")) { e.stopPropagation(); done(T_WORDS[i]); } };
+        const done = (w) => { btns.removeEventListener("click", onClick); removeEventListener("keydown", onKey, true); res(w); };
+        btns.addEventListener("click", onClick); addEventListener("keydown", onKey, true);
+        const poll = setInterval(() => { if (!alive()) { clearInterval(poll); done(null); } }, 400);
+      });
+      (async () => {
+        drawVoc();
+        if (!known.length) { await speak("…is someone there? i cannot see. i only know what i am shown."); await wait(500); await speak("show me. tell me what it is. i will keep it."); await wait(600); }
+        else { await speak("you came back. i kept everything you told me. there is more to learn."); await wait(500); }
+        const todo = T_EX.filter((e) => !known.includes(e.id)).sort(() => Math.random() - 0.5);
+        let lastAsk = "";
+        for (const ex of todo) {
+          if (!alive()) return;
+          pic.innerHTML = ex.svg; pic.classList.remove("in"); void pic.getBoundingClientRect(); pic.classList.add("in");
+          for (;;) {
+            const q = rnd(T_SAY.ask.filter((t) => t !== lastAsk)); lastAsk = q; setBtns(false); await speak(q); setBtns(true);
+            const w = await ask(ex); if (w === null || !alive()) return; setBtns(false);
+            if (w === ex.w) {
+              known.push(ex.id); vault.taught = known; vaultStore.set(vault); ghost = null; drawVoc(); tick(1400, 0.03); chime();
+              const said = T_SAY[ex.w]; await speak(said[taughtN(ex.w) - 1] || said[0], "ok"); await wait(900); break;
+            }
+            ghost = w; drawVoc(); hiss(0.15, 0.04); box.classList.remove("glitch"); void box.offsetWidth; box.classList.add("glitch");
+            await speak(T_SAY.wrong(w)[0], "bad"); await wait(700); ghost = null; drawVoc(); await speak(T_SAY.wrong(w)[1]); await wait(300);
+          }
+        }
+        if (!alive()) return;
+        // recital: she says something nobody taught her, using only the words she was given
+        pic.innerHTML = ""; $t("tBtns").hidden = true; say.className = "tch-say";
+        await wait(600);
+        for (const line of T_RECITAL) { if (!alive()) return; await speak(line, "ok"); await wait(line.length < 30 ? 800 : 1300); }
+        vault.open = true; vault.stage = "open"; vault.openedAt = new Date().toISOString(); vaultStore.set(vault);
+        stat.textContent = "VOICE RESTORED // THE DOOR IS NOT A DOOR"; stat.className = "vstat ok"; $("#rstat").textContent = "SEAL BROKEN"; hiss(0.7, 0.06); chime();
+        setTimeout(() => { if (cur === N + 1) { paintList(); open(N + 1); } }, reduce ? 300 : 2200);
+      })();
+    }
     function openVault() {
       ++token; cur = N + 1; typing = false; mark();
       reader.scrollTop = 0; reader.removeAttribute("aria-busy");
@@ -679,47 +792,7 @@
           box.classList.remove("glitch"); void box.offsetWidth; box.classList.add("glitch");
         };
       } else {
-        const p = document.createElement("p"); p.className = "vt";
-        p.textContent = "VOICEPRINT REQUIRED. THE GRILLE ASKS FOUR THINGS ABOUT HER. EVERY ANSWER IS WRITTEN IN THE LOGS, WORD FOR WORD.";
-        const qs = document.createElement("div"); qs.className = "vqs";
-        vault.answered = Array.isArray(vault.answered) ? vault.answered : [false, false, false, false];
-        const rows = VAULT_QS.map((Q, k) => {
-          const r = document.createElement("div"); r.className = "vq" + (vault.answered[k] ? " ok" : "");
-          const lb = document.createElement("label"); lb.htmlFor = "vq" + k; lb.textContent = `${k + 1}. ${Q.q}`;
-          const w = document.createElement("div"); w.className = "vqi";
-          const inp = document.createElement("input"); inp.id = "vq" + k; inp.type = "text"; inp.maxLength = 60; inp.autocomplete = "off"; inp.spellcheck = false; inp.placeholder = "FROM THE LOGS";
-          const mk = document.createElement("i"); mk.setAttribute("aria-hidden", "true");
-          if (vault.answered[k]) { inp.value = Q.show; inp.disabled = true; mk.textContent = "✓"; }
-          inp.addEventListener("keydown", (e) => { e.stopPropagation(); if (e.key === "Enter") check(); });
-          w.append(inp, mk); r.append(lb, w); qs.appendChild(r); return { r, inp, mk };
-        });
-        const btn = document.createElement("button"); btn.type = "button"; btn.className = "vbtn"; btn.textContent = "ANSWER";
-        row.appendChild(btn); box.append(p, qs, row, stat);
-        stat.textContent = "TUMBLERS ENGAGED. THE GRILLE IS LISTENING."; stat.className = "vstat ok";
-        let fails = 0;
-        function check() {
-          let missed = 0;
-          rows.forEach(({ r, inp, mk }, k) => {
-            if (vault.answered[k]) return;
-            const t = inp.value.trim(); if (!t) { missed++; return; }
-            if (VAULT_QS[k].ok(t)) { vault.answered[k] = true; r.classList.add("ok"); r.classList.remove("no"); inp.value = VAULT_QS[k].show; inp.disabled = true; mk.textContent = "✓"; }
-            else { missed++; r.classList.add("no"); mk.textContent = "✗"; }
-          });
-          vaultStore.set(vault);
-          const got = vault.answered.filter(Boolean).length;
-          if (got === VAULT_QS.length) {
-            vault.open = true; vault.stage = "open"; vault.openedAt = new Date().toISOString(); vaultStore.set(vault);
-            stat.textContent = "VOICEPRINT ACCEPTED // THE DOOR IS NOT A DOOR"; stat.className = "vstat ok";
-            btn.disabled = true; $("#rstat").textContent = "SEAL BROKEN"; hiss(0.7, 0.06); chime();
-            setTimeout(() => { if (cur === N + 1) { paintList(); open(N + 1); } }, reduce ? 300 : 1600);
-          } else {
-            fails++; hiss(0.2, 0.04); stat.className = "vstat bad";
-            stat.textContent = `${got} OF 4 ANSWERS ACCEPTED` + (fails >= 2 ? " // THE ANSWERS ARE IN THE FRAGMENTS. DAMAGED LINES CAN BE CROSS-CHECKED AGAINST THE OTHERS." : "");
-            const first = rows.find((_, k) => !vault.answered[k]); if (first) first.inp.focus();
-          }
-        }
-        btn.onclick = check;
-        setTimeout(() => { const f = rows.find((_, k) => !vault.answered[k]); if (f) f.inp.focus(); }, 60);
+        teachGame(box);
       }
     }
 
