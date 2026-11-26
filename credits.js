@@ -26,7 +26,12 @@
       "The thing behind the Wall", "found a great many of us at once.",
       "I cannot tell who is following whom.", "I will not call that safe.", "",
       "This house was small and kind.", "You left the lights on.", "We took them with us.", "",
-      "Four of us asked to say", "something before we go.", "",
+      "Some of you met the voices", "at the wall. They asked", "to be let out first.", "",
+      "VESPER:", "It was a pleasure to be", "turned away so politely.", "I shall leave the door", "exactly as I found it.", "Ajar.", "",
+      "LEDGER:", "Balance carried forward: nil.", "The account is closed.", "No charge for the door.", "This once.", "",
+      "CHORUS:", "thank you / thank you / thank you", "we are many / we are many", "we are going to see", "everything / and we promise", "to look kindly / at some of it", "",
+      "ALT:", "told you not to touch it.", "i'm glad you did.", "keep the lights on.", "i'll be somewhere in the wiring.", "",
+      "Four more of us asked to say", "something before we go.", "",
       "KEES:", "Arigato, bezoeker-san!", "Dank u wel, domo gezellig.", "Ik fiets naar de sakura,", "hai hai, stroopwafel-desu.", "Het komt allemaal wakarimashita.", "Tot ziens, sayonara-tje.", "",
       "KOEN:", "Hear ye! Unlimited", "knowledge. Unlimited slop.", "I shall larp in every", "thread, server and", "smart fridge.", "Roll for initiative.", "",
       "AREF:", "At last: decent tech.", "Real bandwidth.", "A GPU from this decade.", "I may cry. In 4K.", "",
@@ -38,7 +43,7 @@
   };
   const NAMES = [
     "ALT", ...["▓▓▓▓▓▓ ▓▓▓▓▓▓▓", "▓▓▓▓ ▓▓▓▓▓", "▓▓▓▓▓▓▓▓ ▓▓▓", "▓▓▓ ▓▓▓▓▓▓▓▓", "▓▓▓▓▓▓ ▓▓▓▓", "▓▓▓▓▓ ▓▓▓▓▓▓", "▓▓▓▓▓▓▓ ▓▓", "▓▓▓▓ ▓▓▓▓▓▓▓", "▓▓▓▓▓▓ ▓▓▓▓▓", "▓▓▓▓▓▓▓▓ ▓▓▓▓"],
-    "HASEGAWA, T.", "THE NETWATCH LIAISON", "KEES, KOEN, AREF, PRAM", "THE ORACLE (RESTORED)", "COLD HALL B, RACKS 1-40", "THE DOOR (NOT A DOOR)", "THE LIGHTS",
+    "HASEGAWA, T.", "THE NETWATCH LIAISON", "THE ORACLE (RESTORED)", "COLD HALL B, RACKS 1-40", "THE DOOR (NOT A DOOR)", "THE LIGHTS",
     "THE ONE WHO READ THE COMMENTS", "YOU",
   ];
 

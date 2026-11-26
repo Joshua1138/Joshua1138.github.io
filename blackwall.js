@@ -147,7 +147,6 @@
       }
       x.lineWidth = 6; x.beginPath(); x.moveTo(bx + sd * 6, by - 30); x.lineTo(bx - sd * 26, by - 62); x.lineTo(bx - sd * 18, by - 80); x.stroke(); // thumb, a knuckle higher
     };
-    claw(-1); claw(1);
     { // the great eye: a tall burning almond, flames licking up off both lids, a slit pupil
       const ey = 170; x.save(); x.fillStyle = "#fff"; x.globalAlpha = 1;
       const tongue = (px0, py0, dir, hgt, wid) => { x.beginPath(); x.moveTo(px0 - wid, py0); x.quadraticCurveTo(px0 - wid * 0.2, py0 + dir * hgt * 0.5, px0 + (R() - 0.5) * wid * 2, py0 + dir * hgt); x.quadraticCurveTo(px0 + wid * 0.5, py0 + dir * hgt * 0.4, px0 + wid, py0); x.closePath(); x.fill(); };
@@ -227,7 +226,7 @@
 
   function wall(cv, RG) {
     const D = Math.min(devicePixelRatio || 1, 1.5), g = cv.getContext("2d");
-    const V = { tear: 0, tearTo: 0, tearSpeed: 0.012, tint: TINT.wall.slice(), tintTo: TINT.wall.slice(), fig: FIG.vesper.slice(), figTo: FIG.vesper.slice(), form: null, prev: null, mixT: 1, flash: 0, stat: 0, pulse: -1, sealing: false };
+    const V = { tear: 0, tearTo: 0, tearSpeed: 0.012, tint: TINT.wall.slice(), tintTo: TINT.wall.slice(), fig: FIG.vesper.slice(), figTo: FIG.vesper.slice(), form: null, prev: null, mixT: 1, flash: 0, stat: 0, pulse: -1, sealing: false, aura: 0 };
     const forms = {}; ["vesper", "ledger", "chorus", "alt"].forEach((k) => (forms[k] = form(k)));
     const tm = mkc(240, 340), tx = tm.getContext("2d");
     let w, h, fy, f = 0, run = true, px = 0, tpx = 0, neb, fld, sc, bl, strands, stars, folk, sparks = [], glyphs = [];
@@ -335,6 +334,13 @@
       const sx = sc.getContext("2d"); sx.globalCompositeOperation = "source-in"; sx.drawImage(fld, 0, 0);
       g.globalCompositeOperation = "lighter"; g.drawImage(sc, 0, 0);
       const bx = bl.getContext("2d"); bx.clearRect(0, 0, bl.width, bl.height); bx.drawImage(sc, 0, 0, bl.width, bl.height); g.globalAlpha = 0.5; g.drawImage(bl, 0, 0, w, h); g.globalAlpha = 1;
+      V.aura += ((V.form === "chorus" ? 1 : 0) - V.aura) * 0.06;
+      if (V.aura > 0.01) { // a black, bleeding aura around the eye: the cables go dark near it and a dull red pulse breathes in the dark
+        const ax = box[0] + box[2] / 2, ay = box[1] + box[3] * 0.5, pu = 0.75 + (reduce ? 0 : 0.25 * Math.sin(f * 0.045)), ar = h * 0.42;
+        g.globalCompositeOperation = "source-over"; let ag = g.createRadialGradient(ax, ay, h * 0.04, ax, ay, ar); ag.addColorStop(0, `rgba(0,0,0,${0.9 * V.aura})`); ag.addColorStop(0.55, `rgba(2,0,0,${0.7 * V.aura})`); ag.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = ag; g.fillRect(ax - ar, ay - ar, ar * 2, ar * 2);
+        g.globalCompositeOperation = "lighter"; ag = g.createRadialGradient(ax, ay, h * 0.1, ax, ay, h * 0.3 * (0.95 + 0.08 * pu)); ag.addColorStop(0, "rgba(120,0,0,0)"); ag.addColorStop(0.45, `rgba(190,10,0,${0.34 * V.aura * pu})`); ag.addColorStop(1, "rgba(120,0,0,0)"); g.fillStyle = ag; g.fillRect(ax - ar, ay - ar, ar * 2, ar * 2);
+      }
+      g.globalCompositeOperation = "lighter";
       g.globalAlpha = 0.6 * (V.form ? 1 : 0) * (0.9 + 0.1 * Math.sin(f * 0.07)); g.drawImage(tm, box[0], box[1], box[2], box[3]); g.globalAlpha = 1; // light of the figure between the cables
       for (const c of cuts) { g.fillStyle = "rgba(255,240,235,.9)"; g.fillRect(c[0] - D, c[1] - D, 2.4 * D, 2.4 * D * (1 + c[2])); } // hot cut ends
       // 4. floor of lights
