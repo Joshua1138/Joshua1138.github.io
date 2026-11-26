@@ -26,7 +26,13 @@ Upload all 3 daemons in the GAME tab and a netrunner transmission arrives (repla
 button). It hints at a crack in the site. Finding it leads to the encounter in `blackwall.js`
 (styles at the bottom of `style.css`). Progress is kept per browser session.
 Testing in the browser console: `JJ_EGG.arm()`, `JJ_EGG.breach()`, `JJ_EGG.reset()`.
-Rewrite the dialogue in the `MSG` array and in `breach()`.
+The encounter is a canvas-rendered Blackwall (curtain of light cables, nebula, a lit floor with tiny
+silhouettes) where a rip opens and you talk to four voices, each with its own font, colour and
+writing style (`WHO` in `blackwall.js`, `.p-*` classes in `style.css`): **VESPER** (veiled, formal),
+**LEDGER** (an invoice-speaking monolith), **CHORUS** (a swarm that repeats itself) and **ALT**
+(lowercase, dry). ALT cuts in, revokes the identity copy, seals the seam, and then gives you the
+Oracle login (`cred()`), which she could not hand over before because the wall checked outgoing packets.
+Rewrite the dialogue in the `MSG` array and in `breach()`; tune looks in `wall()`.
 
 ## Host for free on GitHub Pages
 1. Create a **public** repo named exactly `Joshua1138.github.io`.
