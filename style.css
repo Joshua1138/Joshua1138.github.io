@@ -570,7 +570,7 @@ body.infected .oracle { --g: #b3121f; }
 .bw-text p.p-ledger.bill { border: 1px dashed rgba(255,176,46,.55); padding: 10px 14px; background: rgba(40,18,0,.5); }
 .bw-text p.p-ledger.dim { color: #b98a3a; }
 /* CHORUS: a crowd. wide sans, split into colour fringes, it never holds still */
-.bw-text p.p-chorus { font-family: "Syncopate", "Arial Black", Arial, sans-serif; font-weight: 400; font-size: clamp(11px, 1.7vw, 14px); letter-spacing: 4px; line-height: 1.8; color: #bfe3ff; text-transform: lowercase; text-shadow: 2px 0 rgba(255,60,200,.6), -2px 0 rgba(60,220,255,.65), 0 0 12px rgba(160,123,255,.55); animation: chor .9s steps(1) infinite; }
+.bw-text p.p-chorus { font-family: "Syncopate", "Arial Black", Arial, sans-serif; font-weight: 400; font-size: clamp(11px, 1.7vw, 14px); letter-spacing: 4px; line-height: 1.8; color: #ffc89a; text-transform: lowercase; text-shadow: 2px 0 rgba(255,40,0,.6), -2px 0 rgba(255,200,40,.5), 0 0 12px rgba(255,90,10,.6); animation: chor .9s steps(1) infinite; }
 @keyframes chor { 0% { transform: translate(0,0); } 20% { transform: translate(2px,-1px); } 40% { transform: translate(-2px,1px); } 60% { transform: translate(1px,2px); } 80% { transform: translate(-1px,-2px); } }
 /* ALT: a person. plain terminal, cyan, calm */
 .bw-text p.p-alt { font-family: var(--mono); font-size: clamp(15px, 2.1vw, 18px); letter-spacing: 1px; color: #8fe9f2; text-shadow: 0 0 10px rgba(90,215,255,.45); }

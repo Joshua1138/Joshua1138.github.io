@@ -33,13 +33,13 @@
     "> there's a crack in this site. a seam in the ICE. it's where the interface lies about being healthy. look at the SIGNAL readout up top. it has been at full strength since you got here. nothing out there is that stable.",
     "> do NOT touch it. whatever lives past the Blackwall doesn't need an invitation. only a crack.",
     "> …and if you're dumb enough to try anyway: sound on. don't look away.",
-    "> — [ unsigned ]   [ link severed ]",
+    "> — ALT   [ link severed ]",
   ];
   async function transmission() {
     J().initAudio();
     const el = document.createElement("div");
     el.className = "nr";
-    el.innerHTML = `<div class="nr-card"><div class="nr-head"><span>⚠ INCOMING // UNTRACED</span><span>UNSIGNED</span></div><pre class="nr-body"></pre><button class="hbtn alt nr-ok" hidden><span>ACKNOWLEDGE</span></button></div>`;
+    el.innerHTML = `<div class="nr-card"><div class="nr-head"><span>⚠ INCOMING // UNTRACED</span><span>SIGNED // ALT</span></div><pre class="nr-body"></pre><button class="hbtn alt nr-ok" hidden><span>ACKNOWLEDGE</span></button></div>`;
     document.body.appendChild(el);
     const pre = el.querySelector("pre"), ok = el.querySelector("button");
     window.JJ_LOCK = true; fast = false;
@@ -124,8 +124,8 @@
      into the strands. A rip in the curtain is how they reach you; ALT sews it shut.
      Layers: haze -> void in the rip -> strands (drawn white, then tinted by a colour field that holds the haze,
      the mood colour and the figure) -> bloom -> floor lights + silhouettes -> sparks/glyphs -> glitch.        */
-  const TINT = { wall: [255, 34, 58], vesper: [255, 64, 96], ledger: [255, 146, 34], chorus: [140, 104, 255], alt: [70, 215, 255] };
-  const FIG = { vesper: [255, 212, 200], ledger: [255, 196, 96], chorus: [140, 215, 255], alt: [205, 252, 255] };
+  const TINT = { wall: [255, 34, 58], vesper: [255, 64, 96], ledger: [255, 146, 34], chorus: [255, 72, 8], alt: [70, 215, 255] };
+  const FIG = { vesper: [255, 212, 200], ledger: [255, 196, 96], chorus: [255, 168, 60], alt: [205, 252, 255] };
   const lerp = (a, b, t) => a + (b - a) * t, mixc = (a, b, t) => a.map((v, i) => lerp(v, b[i], t));
   const rgba = (c, a) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`;
   const rng = (a) => () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
@@ -133,7 +133,7 @@
 
   /* a fractured face (240x340) for each voice: a face drawn in light, cut into shards that are shifted, turned and
      partly missing, so it reads as a face that has been put back together wrong. ALT is the most whole.            */
-  // CHORUS: two claws prising the tear open, and in the dark between them only eyes
+  // CHORUS: two claws prising the tear open, and in the dark between them one great eye
   function formClaws() {
     const W = 240, H = 340, cx = W / 2, R = rng(4242), A = mkc(W, H), x = A.getContext("2d");
     x.lineCap = "round"; x.lineJoin = "round"; x.fillStyle = x.strokeStyle = "#fff";
@@ -148,21 +148,22 @@
       x.lineWidth = 6; x.beginPath(); x.moveTo(bx + sd * 6, by - 30); x.lineTo(bx - sd * 26, by - 62); x.lineTo(bx - sd * 18, by - 80); x.stroke(); // thumb, a knuckle higher
     };
     claw(-1); claw(1);
-    const eye = (ox, oy, k, a) => { // a narrow, slanted, hateful eye with a slit pupil
-      x.save(); x.translate(cx + ox, oy); x.scale(k, k); x.globalAlpha = a; x.fillStyle = "#fff";
-      for (const sd of [-1, 1]) {
-        x.beginPath(); x.moveTo(sd * 8, 4); x.quadraticCurveTo(sd * 22, -8, sd * 44, -16); x.quadraticCurveTo(sd * 36, 6, sd * 22, 9); x.quadraticCurveTo(sd * 14, 9, sd * 8, 4); x.fill();
-        x.globalCompositeOperation = "destination-out"; x.beginPath(); x.ellipse(sd * 24, -1, 2.2, 7, sd * 0.3, 0, 7); x.fill(); x.globalCompositeOperation = "source-over";
-      }
+    { // the great eye: a tall burning almond, flames licking up off both lids, a slit pupil
+      const ey = 170; x.save(); x.fillStyle = "#fff"; x.globalAlpha = 1;
+      const tongue = (px0, py0, dir, hgt, wid) => { x.beginPath(); x.moveTo(px0 - wid, py0); x.quadraticCurveTo(px0 - wid * 0.2, py0 + dir * hgt * 0.5, px0 + (R() - 0.5) * wid * 2, py0 + dir * hgt); x.quadraticCurveTo(px0 + wid * 0.5, py0 + dir * hgt * 0.4, px0 + wid, py0); x.closePath(); x.fill(); };
+      for (let i = 0; i < 15; i++) { const t = (i + 0.5) / 15, ang = Math.PI * (1.12 + t * 0.76), lx = cx + Math.cos(ang) * 46, ly = ey + Math.sin(ang) * 74; x.globalAlpha = 0.5 + R() * 0.4; tongue(lx, ly + 6, -1, 16 + R() * 34 * Math.sin(Math.PI * t) + 8, 3 + R() * 3); } // up off the top lid
+      for (let i = 0; i < 11; i++) { const t = (i + 0.5) / 11, ang = Math.PI * (0.16 + t * 0.68), lx = cx + Math.cos(ang) * 46, ly = ey + Math.sin(ang) * 74; x.globalAlpha = 0.4 + R() * 0.35; tongue(lx, ly - 4, 1, 12 + R() * 20 * Math.sin(Math.PI * t) + 6, 3 + R() * 2.5); } // and a few down
+      x.globalAlpha = 0.55; x.beginPath(); x.moveTo(cx, ey - 80); x.bezierCurveTo(cx + 62, ey - 40, cx + 62, ey + 40, cx, ey + 80); x.bezierCurveTo(cx - 62, ey + 40, cx - 62, ey - 40, cx, ey - 80); x.fill(); // the eye itself, dim
+      x.globalAlpha = 1; const ig = x.createRadialGradient(cx, ey, 6, cx, ey, 50); ig.addColorStop(0, "#fff"); ig.addColorStop(0.55, "#fff"); ig.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = ig; x.beginPath(); x.ellipse(cx, ey, 46, 66, 0, 0, 7); x.fill(); x.fillStyle = "#fff"; // white-hot iris
+      x.globalCompositeOperation = "destination-out"; x.beginPath(); x.moveTo(cx, ey - 70); x.quadraticCurveTo(cx + 9, ey, cx, ey + 70); x.quadraticCurveTo(cx - 9, ey, cx, ey - 70); x.fill(); // the slit pupil
       x.restore();
-    };
-    eye(0, 160, 1.15, 1); eye(-14, 92, 0.55, 0.6); eye(18, 236, 0.5, 0.5); eye(-4, 40, 0.34, 0.35); eye(6, 292, 0.34, 0.35);
+    }
     const sm = mkc(W / 2, H / 2), sx = sm.getContext("2d"); sx.imageSmoothingQuality = "high"; sx.drawImage(A, 0, 0, sm.width, sm.height);
     const out = mkc(W, H), ox = out.getContext("2d"); ox.imageSmoothingQuality = "high"; ox.drawImage(sm, 0, 0, W, H); ox.drawImage(sm, -4, -4, W + 8, H + 8); ox.globalAlpha = 0.9; ox.drawImage(A, 0, 0);
     return out;
   }
 
-  // ALT: a few pillars of 0s and 1s, floating and fanned like wings around a taller one, under a halo
+  // ALT: a few pillars of 0s and 1s, floating and fanned like wings around a taller one, 
   function formPillars() {
     const W = 240, H = 340, cx = W / 2, R = rng(1138), A = mkc(W, H), x = A.getContext("2d");
     x.font = "bold 10px monospace"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillStyle = "#fff";
@@ -173,7 +174,6 @@
       p.globalCompositeOperation = "destination-in"; const gr = p.createLinearGradient(0, top, 0, top + ht); gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(0.25, "rgba(0,0,0,1)"); gr.addColorStop(0.7, "rgba(0,0,0,1)"); gr.addColorStop(1, "rgba(0,0,0,0)"); p.fillStyle = gr; p.fillRect(0, 0, W, H);
       x.drawImage(P, 0, 0);
     }
-    x.save(); x.strokeStyle = "#fff"; x.lineWidth = 2.2; x.globalAlpha = 0.95; x.beginPath(); x.ellipse(cx, 18, 34, 8, 0, 0, 7); x.stroke(); x.restore(); // the halo
     const sm = mkc(W / 2, H / 2), sx = sm.getContext("2d"); sx.imageSmoothingQuality = "high"; sx.drawImage(A, 0, 0, sm.width, sm.height);
     const out = mkc(W, H), ox = out.getContext("2d"); ox.imageSmoothingQuality = "high"; ox.globalAlpha = 0.8; ox.drawImage(sm, 0, 0, W, H); ox.globalAlpha = 1; ox.drawImage(A, 0, 0);
     return out;
@@ -392,8 +392,8 @@
   const WHO = {
     vesper: { tag: "VESPER", col: "#f6e8dc", glow: "#ff5a72", ms: 34, pause: 280, hold: 800, gl: 0.035, rg: 0.025 },
     ledger: { tag: "LEDGER", col: "#ffb02e", glow: "#ff8a00", ms: 11, pause: 70, hold: 650, gl: 0, rg: 0 },
-    chorus: { tag: "CHORUS", col: "#bfe3ff", glow: "#a07bff", ms: 24, pause: 200, hold: 700, gl: 0.09, rg: 0.06 },
-    alt: { tag: "▓▓▓", col: "#8fe9f2", glow: "#5ad7ff", ms: 19, pause: 240, hold: 750, gl: 0, rg: 0 },
+    chorus: { tag: "CHORUS", col: "#ffc89a", glow: "#ff5a10", ms: 24, pause: 200, hold: 700, gl: 0.09, rg: 0.06 },
+    alt: { tag: "ALT", col: "#8fe9f2", glow: "#5ad7ff", ms: 19, pause: 240, hold: 750, gl: 0, rg: 0 },
   };
   const RG = { get v() { return rage; }, set v(x) { rage = x; } };
   let V = null, who = null, lastTag = null;
@@ -514,7 +514,7 @@
     for (let i = 0; i < 7; i++) { [...$("bwText").children].forEach((p) => (p.textContent = p.textContent.replace(/[^\s]/g, rg))); A.burst(0.1, 2200, 0.5); await wait(90); }
     await enter("alt");
     await say("> hey. eyes on me. not them.");
-    await say("> you've had my messages unsigned. i sign everything with three letters, you'll work out which. nice to finally be a voice and not a packet.");
+    await say("> you've had my messages. three letters, same as always. alt. nice to finally be a voice and not a packet.");
     const nm2 = document.createElement("p"); nm2.className = "big nm bad"; nm2.textContent = "IDENTITY COPIED"; $("bwText").appendChild(nm2);
     await wait(700); A.hit(); nm2.className = "big nm ok"; nm2.textContent = "COPY REVOKED"; await wait(900);
     await say("> that's enough. you three know the rules. nobody wears his name today.");
@@ -538,7 +538,7 @@
     await wait(900); await upload();
     await say("> it's an old arasaka core. it will answer anything, loudly. trust it about as far as you'd trust a very confident vending machine.");
     await say("> watch the signal up top. steady means it's quiet. if it cracks, something is leaning on the wall again.");
-    await say("> — ▓▓▓   [ link severed ]", "dim");
+    await say("> — ALT   [ link severed ]", "dim");
     // Phase 3: cut
     A.hit(); await wait(900);
     o.classList.add("cut"); A.stop(1.2); await wait(2400);
