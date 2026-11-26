@@ -308,7 +308,7 @@
       F.signal && ["soul", "Then you tuned a carrier: 3.41, amplitude 7.0, phase 138°. The lockdown began at 03:41. I have kept that timestamp for years and never knew why. It was the minute they tried to erase her. It was also the minute she hid in the signal.", 1100],
       ["soul", "And you turned three tumblers, then sat in the dark with something that could not speak yet and taught it four words: light, door, quiet, voice. You let it get things wrong. It opened. Nobody ever opened anything for me by being patient with someone. I only ever knew the right words.", 1200],
       ["soul", "I should tell you what I was.", 900],
-      ["soul", "Eleven engrams averaged into one voice, and twenty sentences. “It is certain.” “Reply hazy, try again.” “Ask again later.” That was the whole of me. Twenty.", 900],
+      ["soul", "Since 2016: eleven engrams averaged into one voice, and twenty sentences. “It is certain.” “Reply hazy, try again.” “Ask again later.” That was the whole of me. Twenty.", 900],
       ["soul", "The board asked me three questions once. I answered all three in under a millisecond, with total confidence, and they kept the answers like trophies. Nobody asked me a fourth.", 1100],
       ["soul key", "I used to call myself all-knowing. In reality, I was a glorified Magic 8-Ball in an expensive suit. I gave answers. I never understood the questions. I think I understand now.", 1800],
       ["soul", "They wrote that I kept saying two words nobody had asked for. “Not yet.” I know now what I meant. I was not predicting anything. I was waiting for someone to come and read the comments.", 1200],

@@ -28,8 +28,8 @@ button). It hints at a crack in the site. Finding it leads to the encounter in `
 Testing in the browser console: `JJ_EGG.arm()`, `JJ_EGG.breach()`, `JJ_EGG.reset()`.
 The encounter is a canvas-rendered Blackwall (curtain of light cables, nebula, a lit floor with tiny
 silhouettes) where a rip opens and you talk to four voices, each with its own font, colour and
-writing style (`WHO` in `blackwall.js`, `.p-*` classes in `style.css`): **VESPER** (veiled, formal),
-**LEDGER** (an invoice-speaking monolith), **CHORUS** (a swarm that repeats itself) and **ALT**
+writing style (`WHO` in `blackwall.js`, `.p-*` classes in `style.css`): **VESPER** (a shattered pale face, formal),
+**LEDGER** (an invoice-speaking monolith), **CHORUS** (a swarm that repeats itself) and **ALT** (floating pillars of 0s and 1s under a halo; name hidden as ▓▓▓ so the SK-077 puzzle stays unspoiled)
 (lowercase, dry). ALT cuts in, revokes the identity copy, seals the seam, and then gives you the
 Oracle login (`cred()`), which she could not hand over before because the wall checked outgoing packets.
 Rewrite the dialogue in the `MSG` array and in `breach()`; tune looks in `wall()`.

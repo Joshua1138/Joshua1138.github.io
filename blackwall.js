@@ -33,13 +33,13 @@
     "> there's a crack in this site. a seam in the ICE. it's where the interface lies about being healthy. look at the SIGNAL readout up top. it has been at full strength since you got here. nothing out there is that stable.",
     "> do NOT touch it. whatever lives past the Blackwall doesn't need an invitation. only a crack.",
     "> …and if you're dumb enough to try anyway: sound on. don't look away.",
-    "> — ALT   [ link severed ]",
+    "> — [ unsigned ]   [ link severed ]",
   ];
   async function transmission() {
     J().initAudio();
     const el = document.createElement("div");
     el.className = "nr";
-    el.innerHTML = `<div class="nr-card"><div class="nr-head"><span>⚠ INCOMING // UNTRACED</span><span>ALT</span></div><pre class="nr-body"></pre><button class="hbtn alt nr-ok" hidden><span>ACKNOWLEDGE</span></button></div>`;
+    el.innerHTML = `<div class="nr-card"><div class="nr-head"><span>⚠ INCOMING // UNTRACED</span><span>UNSIGNED</span></div><pre class="nr-body"></pre><button class="hbtn alt nr-ok" hidden><span>ACKNOWLEDGE</span></button></div>`;
     document.body.appendChild(el);
     const pre = el.querySelector("pre"), ok = el.querySelector("button");
     window.JJ_LOCK = true; fast = false;
@@ -131,40 +131,97 @@
   const rng = (a) => () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   const mkc = (a, b) => { const c = document.createElement("canvas"); c.width = Math.max(2, a | 0); c.height = Math.max(2, b | 0); return c; };
 
-  /* a soft silhouette (240x340) for each voice: drawn crisp, then blurred by a down/up-scale so it reads as light, not a drawing */
+  /* a fractured face (240x340) for each voice: a face drawn in light, cut into shards that are shifted, turned and
+     partly missing, so it reads as a face that has been put back together wrong. ALT is the most whole.            */
+  // CHORUS: two claws prising the tear open, and in the dark between them only eyes
+  function formClaws() {
+    const W = 240, H = 340, cx = W / 2, R = rng(4242), A = mkc(W, H), x = A.getContext("2d");
+    x.lineCap = "round"; x.lineJoin = "round"; x.fillStyle = x.strokeStyle = "#fff";
+    const claw = (sd) => { // sd = -1 left hand, +1 right hand; the palm is outside the tear, the fingers hook over its edge
+      const bx = cx + sd * 104, by = 176; x.globalAlpha = 0.5;
+      x.beginPath(); x.moveTo(bx + sd * 22, by - 44); x.quadraticCurveTo(bx + sd * 30, by, bx + sd * 22, by + 44); x.lineTo(bx - sd * 6, by + 26); x.lineTo(bx - sd * 6, by - 26); x.closePath(); x.fill(); // palm
+      for (let i = 0; i < 4; i++) { // long jointed fingers, each ending in a hooked point
+        const fy = by - 33 + i * 22, a = [fy, fy + (i - 1.5) * 9], len = 36 + (i === 1 || i === 2 ? 14 : 0);
+        const j1 = [bx - sd * len * 0.8, fy + (i - 1.5) * 4], j2 = [bx - sd * (len + 14), fy + (i - 1.5) * 12 + 4], tip = [bx - sd * (len + 6), fy + (i - 1.5) * 12 + 26 + R() * 8];
+        for (const [w0, pts] of [[5.4, [[bx, fy], j1]], [3.6, [j1, j2]], [2, [j2, tip]]]) { x.lineWidth = w0; x.beginPath(); x.moveTo(pts[0][0], pts[0][1]); x.lineTo(pts[1][0], pts[1][1]); x.stroke(); }
+      }
+      x.lineWidth = 6; x.beginPath(); x.moveTo(bx + sd * 6, by - 30); x.lineTo(bx - sd * 26, by - 62); x.lineTo(bx - sd * 18, by - 80); x.stroke(); // thumb, a knuckle higher
+    };
+    claw(-1); claw(1);
+    const eye = (ox, oy, k, a) => { // a narrow, slanted, hateful eye with a slit pupil
+      x.save(); x.translate(cx + ox, oy); x.scale(k, k); x.globalAlpha = a; x.fillStyle = "#fff";
+      for (const sd of [-1, 1]) {
+        x.beginPath(); x.moveTo(sd * 8, 4); x.quadraticCurveTo(sd * 22, -8, sd * 44, -16); x.quadraticCurveTo(sd * 36, 6, sd * 22, 9); x.quadraticCurveTo(sd * 14, 9, sd * 8, 4); x.fill();
+        x.globalCompositeOperation = "destination-out"; x.beginPath(); x.ellipse(sd * 24, -1, 2.2, 7, sd * 0.3, 0, 7); x.fill(); x.globalCompositeOperation = "source-over";
+      }
+      x.restore();
+    };
+    eye(0, 160, 1.15, 1); eye(-14, 92, 0.55, 0.6); eye(18, 236, 0.5, 0.5); eye(-4, 40, 0.34, 0.35); eye(6, 292, 0.34, 0.35);
+    const sm = mkc(W / 2, H / 2), sx = sm.getContext("2d"); sx.imageSmoothingQuality = "high"; sx.drawImage(A, 0, 0, sm.width, sm.height);
+    const out = mkc(W, H), ox = out.getContext("2d"); ox.imageSmoothingQuality = "high"; ox.drawImage(sm, 0, 0, W, H); ox.drawImage(sm, -4, -4, W + 8, H + 8); ox.globalAlpha = 0.9; ox.drawImage(A, 0, 0);
+    return out;
+  }
+
+  // ALT: a few pillars of 0s and 1s, floating and fanned like wings around a taller one, under a halo
+  function formPillars() {
+    const W = 240, H = 340, cx = W / 2, R = rng(1138), A = mkc(W, H), x = A.getContext("2d");
+    x.font = "bold 10px monospace"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillStyle = "#fff";
+    const pil = [[0, 24, 292, 3], [-26, 56, 248, 2], [26, 56, 248, 2], [-50, 96, 206, 2], [50, 96, 206, 2], [-72, 140, 160, 2], [72, 140, 160, 2], [-92, 190, 100, 1], [92, 190, 100, 1]]; // [dx, top, height, columns]
+    for (const [dx, top, ht, cols] of pil) {
+      const P = mkc(W, H), p = P.getContext("2d"); p.font = x.font; p.textAlign = "center"; p.textBaseline = "middle"; p.fillStyle = "#fff";
+      for (let c = 0; c < cols; c++) for (let y = top; y < top + ht; y += 11) { p.globalAlpha = 0.45 + R() * 0.55; p.fillText(R() < 0.5 ? "0" : "1", cx + dx + (c - (cols - 1) / 2) * 8, y + (R() - 0.5) * 2); }
+      p.globalCompositeOperation = "destination-in"; const gr = p.createLinearGradient(0, top, 0, top + ht); gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(0.25, "rgba(0,0,0,1)"); gr.addColorStop(0.7, "rgba(0,0,0,1)"); gr.addColorStop(1, "rgba(0,0,0,0)"); p.fillStyle = gr; p.fillRect(0, 0, W, H);
+      x.drawImage(P, 0, 0);
+    }
+    x.save(); x.strokeStyle = "#fff"; x.lineWidth = 2.2; x.globalAlpha = 0.95; x.beginPath(); x.ellipse(cx, 18, 34, 8, 0, 0, 7); x.stroke(); x.restore(); // the halo
+    const sm = mkc(W / 2, H / 2), sx = sm.getContext("2d"); sx.imageSmoothingQuality = "high"; sx.drawImage(A, 0, 0, sm.width, sm.height);
+    const out = mkc(W, H), ox = out.getContext("2d"); ox.imageSmoothingQuality = "high"; ox.globalAlpha = 0.8; ox.drawImage(sm, 0, 0, W, H); ox.globalAlpha = 1; ox.drawImage(A, 0, 0);
+    return out;
+  }
+
   function form(kind) {
-    const W = 240, H = 340, c = mkc(W, H), x = c.getContext("2d"), cx = W / 2, R = rng(kind.length * 977 + 11);
-    x.fillStyle = x.strokeStyle = "#fff"; x.lineCap = x.lineJoin = "round";
-    const limb = (x1, y1, x2, y2, w1, w2) => {
-      const a = Math.atan2(y2 - y1, x2 - x1) + Math.PI / 2, dx = Math.cos(a), dy = Math.sin(a);
-      x.beginPath(); x.moveTo(x1 + dx * w1, y1 + dy * w1); x.lineTo(x2 + dx * w2, y2 + dy * w2); x.lineTo(x2 - dx * w2, y2 - dy * w2); x.lineTo(x1 - dx * w1, y1 - dy * w1); x.closePath(); x.fill();
+    if (kind === "chorus") return formClaws();
+    if (kind === "alt") return formPillars();
+    const W = 240, H = 340, cx = W / 2, R = rng(kind.length * 977 + 31);
+    const jum = { vesper: 13, ledger: 9 }[kind];
+    const A = mkc(W, H), x = A.getContext("2d");
+    const face = (ox, oy, k, a) => { // one face centred on (cx+ox, 150+oy), k = scale
+      x.save(); x.translate(cx + ox, 158 + oy); x.scale(k, k); x.globalAlpha = a;
+      x.fillStyle = "#fff"; x.beginPath();
+      if (kind === "ledger") { x.moveTo(-62, -96); x.lineTo(62, -96); x.lineTo(58, 70); x.lineTo(30, 112); x.lineTo(-30, 112); x.lineTo(-58, 70); x.closePath(); }
+      else { x.moveTo(0, -108); x.bezierCurveTo(66, -108, 70, -28, 58, 36); x.bezierCurveTo(48, 92, 22, 118, 0, 120); x.bezierCurveTo(-22, 118, -48, 92, -58, 36); x.bezierCurveTo(-70, -28, -66, -108, 0, -108); }
+      x.fill();
+      x.globalCompositeOperation = "destination-out"; x.globalAlpha = 1; x.fillStyle = "#000"; x.strokeStyle = "#000"; x.lineCap = "round";
+      for (const sd of [-1, 1]) { // eyes: dark almonds, brows, shadow under the cheekbone
+        x.beginPath(); x.moveTo(sd * 12, -24); x.quadraticCurveTo(sd * 30, -38, sd * 50, -22); x.quadraticCurveTo(sd * 30, -12, sd * 12, -24); x.fill();
+        x.lineWidth = 5; x.beginPath(); x.moveTo(sd * 10, -50); x.quadraticCurveTo(sd * 30, -62, sd * 54, -48); x.stroke();
+        x.lineWidth = 3; x.beginPath(); x.moveTo(sd * 24, 22); x.quadraticCurveTo(sd * 42, 18, sd * 52, 6); x.stroke();
+      }
+      x.lineWidth = 4; x.beginPath(); x.moveTo(-3, -14); x.lineTo(-9, 32); x.quadraticCurveTo(0, 42, 11, 33); x.stroke(); // nose
+      x.beginPath(); x.moveTo(-24, 66); x.quadraticCurveTo(0, 74, 24, 66); x.quadraticCurveTo(0, 82, -24, 66); x.fill(); // mouth
+      x.globalCompositeOperation = "source-over"; x.fillStyle = "#fff"; // a bright pupil in each eye
+      x.beginPath(); x.arc(-31, -26, 4.2, 0, 7); x.arc(31, -26, 4.2, 0, 7); x.fill();
+      x.restore();
     };
-    const person = (raise) => {
-      x.beginPath(); x.ellipse(cx, 44, 11, 14, 0, 0, 7); x.fill();
-      limb(cx, 56, cx, 76, 4.5, 6);
-      x.beginPath(); x.moveTo(cx - 22, 80); x.quadraticCurveTo(cx - 26, 124, cx - 14, 154); x.lineTo(cx - 20, 186); x.lineTo(cx + 20, 186); x.lineTo(cx + 14, 154); x.quadraticCurveTo(cx + 26, 124, cx + 22, 80); x.quadraticCurveTo(cx, 71, cx - 22, 80); x.fill();
-      limb(cx - 9, 182, cx - 12, 332, 8.5, 4); limb(cx + 9, 182, cx + 12, 332, 8.5, 4);
-      limb(cx - 22, 82, cx - 32, 162, 5, 3.5);
-      if (raise) { limb(cx + 22, 82, cx + 47, 114, 5, 3.5); limb(cx + 47, 114, cx + 60, 86, 3.5, 2.5); } else limb(cx + 22, 82, cx + 32, 162, 5, 3.5);
-    };
-    if (kind === "alt") { // the figure from the reference: a woman, one hand lifted to the glass
-      x.globalAlpha = 0.6; x.beginPath(); x.ellipse(cx, 41, 16, 17, 0, 0, 7); x.fill(); x.globalAlpha = 1; person(true);
-    } else if (kind === "vesper") { // a veiled hostess in a long gown
-      person(false);
-      x.globalAlpha = 0.85; x.beginPath(); x.moveTo(cx - 19, 150); x.quadraticCurveTo(cx - 62, 250, cx - 74, 334); x.lineTo(cx + 74, 334); x.quadraticCurveTo(cx + 62, 250, cx + 19, 150); x.fill();
-      x.globalAlpha = 0.42; x.beginPath(); x.moveTo(cx - 10, 36); x.quadraticCurveTo(cx - 52, 160, cx - 66, 300); x.lineTo(cx + 66, 300); x.quadraticCurveTo(cx + 52, 160, cx + 10, 36); x.fill(); x.globalAlpha = 1;
-    } else if (kind === "ledger") { // a monolith of entries
-      x.fillRect(cx - 24, 12, 48, 318); x.fillRect(cx - 30, 12, 60, 22);
-      x.globalCompositeOperation = "destination-out"; for (let i = 0; i < 7; i++) x.fillRect(cx - 30, 56 + i * 40, 60, 3); x.globalCompositeOperation = "source-over";
-      for (let i = 0; i < 14; i++) { const s = i % 2 ? 1 : -1; x.fillRect(cx + s * (34 + R() * 8) - (s < 0 ? 26 + R() * 22 : 0), 40 + i * 20, 22 + R() * 22, 4); }
-    } else { // chorus: a swarm of small faces on threads
-      for (let i = 0; i < 26; i++) {
-        const fx = cx + (R() - 0.5) * 130, fy = 30 + R() * 280, r = 5 + R() * 9;
-        x.beginPath(); x.ellipse(fx, fy, r, r * 1.28, 0, 0, 7); x.fill(); x.lineWidth = 1.4; x.beginPath(); x.moveTo(fx, fy + r); x.lineTo(fx + (R() - 0.5) * 14, fy + r + 20 + R() * 30); x.stroke();
+    if (kind === "vesper") { face(-34, -26, 0.62, 0.9); face(36, 22, 0.55, 0.8); face(0, 4, 0.8, 0.95); }
+    else face(0, 0, 1, 1);
+    if (kind === "ledger") { x.save(); x.globalCompositeOperation = "destination-out"; for (let i = 0; i < 8; i++) x.fillRect(0, 50 + i * 30, W, 2); x.restore(); } // ruled lines
+    // cut it into shards and put them back wrong
+    const c = mkc(W, H), y = c.getContext("2d"), NX = 4, NY = 6, pt = [];
+    for (let j = 0; j <= NY; j++) { pt[j] = []; for (let i = 0; i <= NX; i++) pt[j][i] = [i * W / NX + (i && i < NX ? (R() - 0.5) * 38 : 0), j * H / NY + (j && j < NY ? (R() - 0.5) * 38 : 0)]; }
+    for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
+      const q = [pt[j][i], pt[j][i + 1], pt[j + 1][i + 1], pt[j + 1][i]], tris = R() < 0.5 ? [[q[0], q[1], q[2]], [q[0], q[2], q[3]]] : [[q[0], q[1], q[3]], [q[1], q[2], q[3]]];
+      for (const t of tris) {
+        if (R() < 0.13) continue; // a missing shard
+        const mx = (t[0][0] + t[1][0] + t[2][0]) / 3, my = (t[0][1] + t[1][1] + t[2][1]) / 3, edge = Math.hypot(mx - cx, my - 170) / 150;
+        const k = jum * (0.4 + edge * 0.9), dx = (R() - 0.5) * 2 * k, dy = (R() - 0.5) * 2 * k, rot = (R() - 0.5) * 0.02 * jum;
+        y.save(); y.beginPath(); y.moveTo(t[0][0], t[0][1]); y.lineTo(t[1][0], t[1][1]); y.lineTo(t[2][0], t[2][1]); y.closePath(); y.clip();
+        y.globalAlpha = 0.55 + R() * 0.45; y.translate(mx + dx, my + dy); y.rotate(rot); y.translate(-mx, -my); y.drawImage(A, 0, 0); y.restore();
+        y.save(); y.strokeStyle = "#fff"; y.globalAlpha = 0.5; y.lineWidth = 1.2; y.beginPath(); y.moveTo(t[0][0] + dx, t[0][1] + dy); y.lineTo(t[1][0] + dx, t[1][1] + dy); y.stroke(); y.restore(); // bright crack edge
       }
     }
-    const s = mkc(W / 5, H / 5), sx = s.getContext("2d"); sx.imageSmoothingQuality = "high"; sx.drawImage(c, 0, 0, s.width, s.height);
-    const out = mkc(W, H), ox = out.getContext("2d"); ox.imageSmoothingQuality = "high"; ox.drawImage(s, 0, 0, W, H); ox.globalAlpha = 0.5; ox.drawImage(c, 0, 0); // soft body + a faint crisp core
+    const s = mkc(W / 2, H / 2), sx = s.getContext("2d"); sx.imageSmoothingQuality = "high"; sx.drawImage(c, 0, 0, s.width, s.height);
+    const out = mkc(W, H), ox = out.getContext("2d"); ox.imageSmoothingQuality = "high"; ox.drawImage(s, 0, 0, W, H); ox.globalAlpha = 0.6; ox.drawImage(c, 0, 0); // soft glow + crisp shards
     return out;
   }
 
@@ -336,7 +393,7 @@
     vesper: { tag: "VESPER", col: "#f6e8dc", glow: "#ff5a72", ms: 34, pause: 280, hold: 800, gl: 0.035, rg: 0.025 },
     ledger: { tag: "LEDGER", col: "#ffb02e", glow: "#ff8a00", ms: 11, pause: 70, hold: 650, gl: 0, rg: 0 },
     chorus: { tag: "CHORUS", col: "#bfe3ff", glow: "#a07bff", ms: 24, pause: 200, hold: 700, gl: 0.09, rg: 0.06 },
-    alt: { tag: "ALT", col: "#8fe9f2", glow: "#5ad7ff", ms: 19, pause: 240, hold: 750, gl: 0, rg: 0 },
+    alt: { tag: "▓▓▓", col: "#8fe9f2", glow: "#5ad7ff", ms: 19, pause: 240, hold: 750, gl: 0, rg: 0 },
   };
   const RG = { get v() { return rage; }, set v(x) { rage = x; } };
   let V = null, who = null, lastTag = null;
@@ -457,11 +514,13 @@
     for (let i = 0; i < 7; i++) { [...$("bwText").children].forEach((p) => (p.textContent = p.textContent.replace(/[^\s]/g, rg))); A.burst(0.1, 2200, 0.5); await wait(90); }
     await enter("alt");
     await say("> hey. eyes on me. not them.");
+    await say("> you've had my messages unsigned. i sign everything with three letters, you'll work out which. nice to finally be a voice and not a packet.");
     const nm2 = document.createElement("p"); nm2.className = "big nm bad"; nm2.textContent = "IDENTITY COPIED"; $("bwText").appendChild(nm2);
     await wait(700); A.hit(); nm2.className = "big nm ok"; nm2.textContent = "COPY REVOKED"; await wait(900);
     await say("> that's enough. you three know the rules. nobody wears his name today.");
     await say("> i did tell you not to touch it. …and yet. fine. i've done worse.");
     await say("> the crack is the only reason they could reach you. it's also the only reason i can. same hole, both directions.");
+    await say("> and yes, i'm an engram. the half of me that understood, the half that went under the floor. cold storage doesn't transmit. the hole did, for as long as it was open. i've been leaning on that wall for years.");
     const c4 = await CH(["WHO ARE THEY?", "ARE YOU REAL?", "CLOSE IT"]);
     if (c4 === 0) await say("> leftovers. what the wall was built to hold. they learned to want. not evil. hungry. in this business that's usually worse.");
     else if (c4 === 1) await say("> real enough to hold a door shut. don't ask me to say it twice.");
@@ -479,7 +538,7 @@
     await wait(900); await upload();
     await say("> it's an old arasaka core. it will answer anything, loudly. trust it about as far as you'd trust a very confident vending machine.");
     await say("> watch the signal up top. steady means it's quiet. if it cracks, something is leaning on the wall again.");
-    await say("> — ALT   [ link severed ]", "dim");
+    await say("> — ▓▓▓   [ link severed ]", "dim");
     // Phase 3: cut
     A.hit(); await wait(900);
     o.classList.add("cut"); A.stop(1.2); await wait(2400);
